@@ -1,62 +1,48 @@
 package `in`.org.dawn.helm
 
-import android.content.res.Configuration
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import `in`.org.dawn.helm.ui.theme.AppTheme
-import kotlinx.coroutines.launch
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,297 +56,176 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
+@Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelmApp() {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
-        if (isLandscape) {
-            Row(
-                modifier = Modifier.padding(innerPadding).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                Home()
-            }
-        }
-        else {
-            Column(
-                modifier = Modifier.padding(innerPadding).fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                Home()
-            }
-        }
-
-    }
-}
-
-@Composable
-fun Home() {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    if (isLandscape) {
-        Column(
-            modifier = Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board8()
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board8()
-        }
-    }
-    Controller(isLandscape)
-    if (isLandscape) {
-        Column(
-            modifier = Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board9()
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board9()
-        }
-    }
-}
-
-@Composable
-fun Board8() {
+    val navController = rememberNavController()
     val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "α",
-            style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "β",
-            style = MaterialTheme.typography.displaySmall
-        )
-    }
-}
-
-@Composable
-fun Board9() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Ɣ",
-            style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Δ",
-            style = MaterialTheme.typography.displaySmall
-        )
-    }
-}
-
-@Composable
-fun MyButton(
-    modifier: Modifier = Modifier,
-    isSelected: Boolean,
-    position: Position,
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        DrawShape(
-            position,
-            isSelected = isSelected
-        )
-    }
-}
-
-@Composable
-fun Controller(isLandscape: Boolean) {
-    // Support RTL
-    val layoutDirection = LocalLayoutDirection.current
-    val directionFactor = if (layoutDirection == LayoutDirection.Rtl) -1 else 1
-
-    val scope = rememberCoroutineScope()
-    val buttonSize = 80.dp
-
-    // Swipe size in px
-    val buttonSizePx = with(LocalDensity.current) { buttonSize.toPx() }
-    val dragSizePx = buttonSizePx * 1.5f
-
-    // Drag offset
-    val offsetX = remember { Animatable(0f) }
-    val offsetY = remember { Animatable(0f) }
-
-    var isDragging by remember { mutableStateOf(false) }
-
-    var currentPosition by remember { mutableStateOf<Position?>(null) }
-
-    LaunchedEffect(offsetX.value, offsetY.value) {
-
-        val newPosition = getPosition(
-            offset = Offset(offsetX.value, offsetY.value),
-            buttonSizePx = buttonSizePx
-        )
-
-        currentPosition = newPosition
+    val versionName = remember {
+        context.packageManager.getPackageInfo(context.packageName, 0)
+            .versionName ?: "?"
     }
 
-    Column(
-        modifier = if (isLandscape) {Modifier.fillMaxHeight()} else {Modifier.fillMaxWidth()},
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-    Box(
-        modifier = Modifier
-            .size(buttonSize * 4)
-            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Box(
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        x = (offsetX.value).roundToInt(),
-                        y = (offsetY.value).roundToInt()
-                    )
-                }
-                .width(buttonSize)
-                .height(buttonSize)
-                .alpha(0.8f)
-                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .pointerInput(Unit) {
-
-                    detectDragGestures(
-                        onDragStart = {
-                            isDragging = true
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(), topBar = {
+                    TopAppBar(
+                        colors = topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    ), title = {
+                        Text(stringResource(R.string.app_name))
+                    }, navigationIcon = {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.ic_launcher_foreground),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            contentDescription = "App Logo"
+                        )
+                    })
+                }) { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(10.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            navController.navigate("dashboard")
                         },
-                        onDragEnd = {
-                            scope.launch {
-                                offsetX.animateTo(0f)
-                            }
-                            scope.launch {
-                                offsetY.animateTo(0f)
-                            }
-                            isDragging = false
-                        },
-                        onDragCancel = {
-                            scope.launch {
-                                offsetX.animateTo(0f)
-                            }
-                            scope.launch {
-                                offsetY.animateTo(0f)
-                            }
-                            isDragging = false
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-
-                            scope.launch {
-                                val newOffsetX = offsetX.value + dragAmount.x * directionFactor
-                                val newOffsetY = offsetY.value + dragAmount.y
-
-                                if (
-                                    sqrt(newOffsetX.pow(2) + newOffsetY.pow(2)) < dragSizePx
-                                ) {
-                                    offsetX.snapTo(newOffsetX)
-                                    offsetY.snapTo(newOffsetY)
-                                } else if (
-                                    sqrt(offsetX.value.pow(2) + newOffsetY.pow(2)) < dragSizePx
-                                ) {
-                                    offsetY.snapTo(newOffsetY)
-                                } else if (
-                                    sqrt(newOffsetX.pow(2) + offsetY.value.pow(2)) < dragSizePx
-                                ) {
-                                    offsetX.snapTo(newOffsetX)
-                                }
-                            }
-
-                        }
-                    )
-                }
-
-        )
-
-        val buttonAlpha = remember {
-            Animatable(0f)
-        }
-
-        LaunchedEffect(key1 = isDragging) {
-            if (isDragging) {
-                buttonAlpha.animateTo(1f)
-            } else {
-                buttonAlpha.animateTo(0f)
-            }
-        }
-
-        Position.values().forEach { position ->
-            val offset = position.getOffset(buttonSizePx)
-            MyButton(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            x = offset.x.roundToInt(),
-                            y = offset.y.roundToInt()
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                            modifier = Modifier.size(100.dp),
+                            contentDescription = "Drive",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Drive", style = MaterialTheme.typography.displayMedium
                         )
                     }
-                    .graphicsLayer {
-                        alpha = buttonAlpha.value
-                        scaleX = buttonAlpha.value
-                        scaleY = buttonAlpha.value
-                    }
-                    .size(buttonSize)
-                    .padding(8.dp),
-                isSelected = position == currentPosition,
-                position = position
-            )
-        }
-        }
-    }
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
 
+                        },
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.anchor_24dp),
+                            modifier = Modifier.size(100.dp),
+                            contentDescription = "Configuration",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Config", style = MaterialTheme.typography.displayMedium
+                        )
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            navController.navigate("about")
+                        },
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.info_24dp),
+                            modifier = Modifier.size(100.dp),
+                            contentDescription = "About",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "About", style = MaterialTheme.typography.displayMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Version $versionName")
+                }
+
+            }
+        }
+        composable("dashboard") { DashBoard() }
+        composable(route = "about") { About() }
+    }
 }
 
-@Preview
-@Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 @Composable
-fun ReplyAppPreview() {
-    AppTheme {
-        HelmApp()
+fun About() {
+    val uriHandler = LocalUriHandler.current
+    val repoUri = stringResource(R.string.repo_url)
+    val deploymentRepoUri = stringResource(R.string.deployment_repo_url)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp)
+
+    ) {
+        Text(
+            stringResource(R.string.app_name),
+            style = MaterialTheme.typography.displayLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            stringResource(R.string.description),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            Button(
+                onClick = {
+                    uriHandler.openUri(repoUri)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary, // Custom background color
+                    contentColor = MaterialTheme.colorScheme.onTertiary, // Custom content (text/icon) color
+                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryFixedDim, // Custom disabled background
+                    disabledContentColor = MaterialTheme.colorScheme.onTertiaryFixed // Custom disabled content color
+                ),
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.code_24dp),
+                    contentDescription = "Code",
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+                Text(
+                    "Project Repo",
+                    color = MaterialTheme.colorScheme.onTertiary
+                )
+            }
+            Button(
+                onClick = {
+                    uriHandler.openUri(deploymentRepoUri)
+                }, colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary, // Custom background color
+                    contentColor = MaterialTheme.colorScheme.onTertiary, // Custom content (text/icon) color
+                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryFixedDim, // Custom disabled background
+                    disabledContentColor = MaterialTheme.colorScheme.onTertiaryFixed // Custom disabled content color
+                )
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.deployed_code_24dp),
+                    contentDescription = "Deployed Code",
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+                Text(
+                    "CI/CD Builds",
+                    color = MaterialTheme.colorScheme.onTertiary
+                )
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 # Helm
 
-A simple gamepad controller for websocket enabled controllers
+A simple gamepad controller for websocket enabled devices
 
 ```txt
 Helm
