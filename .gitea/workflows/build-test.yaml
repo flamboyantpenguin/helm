@@ -1,8 +1,8 @@
 ---
 
-name: Build Edge
+name: Build Test
 "on":
-  push:
+  pull_request:
     branches:
       - master
     paths:
@@ -65,25 +65,3 @@ jobs:
           -Pandroid.injected.signing.store.password=$KEY_STORE_PASS \
           -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
           -Pandroid.injected.signing.key.password=$KEY_PASS
-
-      - name: Publish
-        run: |
-          export commit=$(git rev-parse --short=6 HEAD)
-          curl  \
-          --user ${{ vars.maintainer }}:${{ secrets.TOKEN }} \
-          --upload-file app/build/outputs/apk/debug/app-debug.apk \
-          https://code.dawn.org.in/api/packages/${{ vars.maintainer }}/generic/helm/edge/app-debug.apk
-          curl  \
-          --user ${{ vars.maintainer }}:${{ secrets.TOKEN }} \
-          --upload-file \
-          app/build/outputs/apk/release/app-release.apk \
-          https://code.dawn.org.in/api/packages/${{ vars.maintainer }}/generic/helm/edge/app-release.apk
-          curl  \
-          --user ${{ vars.maintainer }}:${{ secrets.TOKEN }} \
-          --upload-file app/build/outputs/apk/debug/app-debug.apk \
-          https://code.dawn.org.in/api/packages/${{ vars.maintainer }}/generic/helm/edge-$commit/app-debug.apk
-          curl  \
-          --user ${{ vars.maintainer }}:${{ secrets.TOKEN }} \
-          --upload-file \
-          app/build/outputs/apk/release/app-release.apk \
-          https://code.dawn.org.in/api/packages/${{ vars.maintainer }}/generic/helm/edge-$commit/app-release.apk
