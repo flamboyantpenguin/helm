@@ -120,7 +120,7 @@ fun Lantern(state: LanternState, onSettingsChanged: (String, Any) -> Unit) {
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = hostName,
-        label = { Text(text = "Hostname") },
+        label = { Text(text = "Host") },
         onValueChange = {
             hostName = it
             onSettingsChanged("lantern_host_name", hostName)

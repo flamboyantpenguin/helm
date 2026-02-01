@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Helm</string>
-    <string name="description">A simple gamepad controller for websocket enabled devices</string>
+    <string name="description">Collection of simple gamepads for websocket enabled devices</string>
     <string name="repo_url" translatable="false">https://github.com/flamboyantpenguin/helm</string>
     <string name="deployment_repo_url" translatable="false">https://code.dawn.org.in/flamboyantpenguin/-/packages/generic/helm</string>
 </resources>
