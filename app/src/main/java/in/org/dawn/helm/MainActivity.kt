@@ -36,11 +36,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import `in`.org.dawn.helm.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -55,10 +55,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelmApp() {
+    val iconSize = 90.dp
     val navController = rememberNavController()
     val context = LocalContext.current
     val versionName = remember {
@@ -96,18 +96,35 @@ fun HelmApp() {
                     OutlinedButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            navController.navigate("dashboard")
+                            //navController.navigate("drive")
                         },
                     ) {
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                            modifier = Modifier.size(100.dp),
-                            contentDescription = "Drive",
+                            modifier = Modifier.size(iconSize),
+                            contentDescription = "Steer",
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Drive", style = MaterialTheme.typography.displayMedium
+                            "Steer", style = MaterialTheme.typography.displayMedium
+                        )
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            navController.navigate("remote")
+                        },
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.tv_remote_24dp),
+                            modifier = Modifier.size(iconSize - 20.dp),
+                            contentDescription = "Remote",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Remote", style = MaterialTheme.typography.displayMedium
                         )
                     }
                     OutlinedButton(
@@ -118,7 +135,7 @@ fun HelmApp() {
                     ) {
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.anchor_24dp),
-                            modifier = Modifier.size(100.dp),
+                            modifier = Modifier.size(iconSize),
                             contentDescription = "Configuration",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -135,7 +152,7 @@ fun HelmApp() {
                     ) {
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.info_24dp),
-                            modifier = Modifier.size(100.dp),
+                            modifier = Modifier.size(iconSize),
                             contentDescription = "About",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -150,7 +167,7 @@ fun HelmApp() {
 
             }
         }
-        composable("dashboard") { DashBoard() }
+        composable("remote") { TVRemote() }
         composable(route = "about") { About() }
     }
 }
@@ -221,7 +238,7 @@ fun About() {
                     tint = MaterialTheme.colorScheme.onTertiary
                 )
                 Text(
-                    "CI/CD Builds",
+                    "CI/CD",
                     color = MaterialTheme.colorScheme.onTertiary
                 )
             }

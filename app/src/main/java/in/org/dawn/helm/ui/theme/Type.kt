@@ -15,7 +15,7 @@ val provider = GoogleFont.Provider(
 
 val bodyFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Raleway Dots"),
+        googleFont = GoogleFont("Zen Dots"),
         fontProvider = provider,
     )
 )

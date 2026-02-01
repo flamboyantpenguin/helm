@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import `in`.org.dawn.helm.remote.Position
 
 @Composable
 fun DrawShape(

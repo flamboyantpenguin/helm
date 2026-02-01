@@ -1,4 +1,4 @@
-package `in`.org.dawn.helm
+package `in`.org.dawn.helm.remote
 
 import android.content.res.Configuration
 import android.widget.Toast
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,9 +43,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import `in`.org.dawn.helm.DrawShape
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -53,7 +56,7 @@ import kotlin.math.sqrt
 @Preview
 @Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 @Composable
-fun DashBoard() {
+fun TVRemote() {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     Scaffold(
@@ -66,7 +69,10 @@ fun DashBoard() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Dash()
+                Tray(true, { Board8() })
+                Tray(true, { Board9() })
+                Spacer(Modifier.padding(16.dp))
+                Controller(true, 60.dp)
             }
         } else {
             Column(
@@ -75,7 +81,9 @@ fun DashBoard() {
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Dash()
+                Tray(false, { Board8() })
+                Controller(false, 80.dp)
+                Tray(false, { Board9() })
             }
         }
 
@@ -83,14 +91,14 @@ fun DashBoard() {
 }
 
 @Composable
-fun Dash() {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+fun Tray(
+    isLandscape: Boolean, content: @Composable () -> Unit
+) {
     if (isLandscape) {
         Column(
             modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Board8()
+            content()
         }
     } else {
         Row(
@@ -99,36 +107,18 @@ fun Dash() {
                 .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Board8()
-        }
-    }
-    Controller(isLandscape)
-    if (isLandscape) {
-        Column(
-            modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board9()
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Board9()
+            content()
         }
     }
 }
 
 @Composable
-fun Controller(isLandscape: Boolean) {
+fun Controller(isLandscape: Boolean, buttonSize: Dp) {
     // Support RTL
     val layoutDirection = LocalLayoutDirection.current
     val directionFactor = if (layoutDirection == LayoutDirection.Rtl) -1 else 1
 
     val scope = rememberCoroutineScope()
-    val buttonSize = 80.dp
 
     // Swipe size in px
     val buttonSizePx = with(LocalDensity.current) { buttonSize.toPx() }
@@ -168,56 +158,55 @@ fun Controller(isLandscape: Boolean) {
             contentAlignment = Alignment.Center
         ) {
 
-            Box(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            x = (offsetX.value).roundToInt(), y = (offsetY.value).roundToInt()
-                        )
-                    }
-                    .width(buttonSize)
-                    .height(buttonSize)
-                    .alpha(0.8f)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape)
-                    .pointerInput(Unit) {
+            Box(modifier = Modifier
+                .offset {
+                    IntOffset(
+                        x = (offsetX.value).roundToInt(), y = (offsetY.value).roundToInt()
+                    )
+                }
+                .width(buttonSize)
+                .height(buttonSize)
+                .alpha(0.8f)
+                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                .pointerInput(Unit) {
 
-                        detectDragGestures(onDragStart = {
-                            isDragging = true
-                        }, onDragEnd = {
-                            scope.launch {
-                                offsetX.animateTo(0f)
-                            }
-                            scope.launch {
-                                offsetY.animateTo(0f)
-                            }
-                            isDragging = false
-                        }, onDragCancel = {
-                            scope.launch {
-                                offsetX.animateTo(0f)
-                            }
-                            scope.launch {
-                                offsetY.animateTo(0f)
-                            }
-                            isDragging = false
-                        }, onDrag = { change, dragAmount ->
-                            change.consume()
+                    detectDragGestures(onDragStart = {
+                        isDragging = true
+                    }, onDragEnd = {
+                        scope.launch {
+                            offsetX.animateTo(0f)
+                        }
+                        scope.launch {
+                            offsetY.animateTo(0f)
+                        }
+                        isDragging = false
+                    }, onDragCancel = {
+                        scope.launch {
+                            offsetX.animateTo(0f)
+                        }
+                        scope.launch {
+                            offsetY.animateTo(0f)
+                        }
+                        isDragging = false
+                    }, onDrag = { change, dragAmount ->
+                        change.consume()
 
-                            scope.launch {
-                                val newOffsetX = offsetX.value + dragAmount.x * directionFactor
-                                val newOffsetY = offsetY.value + dragAmount.y
+                        scope.launch {
+                            val newOffsetX = offsetX.value + dragAmount.x * directionFactor
+                            val newOffsetY = offsetY.value + dragAmount.y
 
-                                if (sqrt(newOffsetX.pow(2) + newOffsetY.pow(2)) < dragSizePx) {
-                                    offsetX.snapTo(newOffsetX)
-                                    offsetY.snapTo(newOffsetY)
-                                } else if (sqrt(offsetX.value.pow(2) + newOffsetY.pow(2)) < dragSizePx) {
-                                    offsetY.snapTo(newOffsetY)
-                                } else if (sqrt(newOffsetX.pow(2) + offsetY.value.pow(2)) < dragSizePx) {
-                                    offsetX.snapTo(newOffsetX)
-                                }
+                            if (sqrt(newOffsetX.pow(2) + newOffsetY.pow(2)) < dragSizePx) {
+                                offsetX.snapTo(newOffsetX)
+                                offsetY.snapTo(newOffsetY)
+                            } else if (sqrt(offsetX.value.pow(2) + newOffsetY.pow(2)) < dragSizePx) {
+                                offsetY.snapTo(newOffsetY)
+                            } else if (sqrt(newOffsetX.pow(2) + offsetY.value.pow(2)) < dragSizePx) {
+                                offsetX.snapTo(newOffsetX)
                             }
+                        }
 
-                        })
-                    }
+                    })
+                }
 
             )
 
@@ -235,20 +224,19 @@ fun Controller(isLandscape: Boolean) {
 
             Position.values().forEach { position ->
                 val offset = position.getOffset(buttonSizePx)
-                MyButton(
-                    modifier = Modifier
-                        .offset {
-                            IntOffset(
-                                x = offset.x.roundToInt(), y = offset.y.roundToInt()
-                            )
-                        }
-                        .graphicsLayer {
-                            alpha = buttonAlpha.value
-                            scaleX = buttonAlpha.value
-                            scaleY = buttonAlpha.value
-                        }
-                        .size(buttonSize)
-                        .padding(8.dp),
+                MyButton(modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            x = offset.x.roundToInt(), y = offset.y.roundToInt()
+                        )
+                    }
+                    .graphicsLayer {
+                        alpha = buttonAlpha.value
+                        scaleX = buttonAlpha.value
+                        scaleY = buttonAlpha.value
+                    }
+                    .size(buttonSize)
+                    .padding(8.dp),
                     isSelected = position == currentPosition,
                     position = position)
             }
@@ -262,7 +250,7 @@ fun Board8() {
     val context = LocalContext.current
     Button(
         onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "α", Toast.LENGTH_SHORT).show()
         },
     ) {
         Text(
@@ -271,7 +259,7 @@ fun Board8() {
     }
     Button(
         onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "β", Toast.LENGTH_SHORT).show()
         },
     ) {
         Text(
@@ -285,7 +273,7 @@ fun Board9() {
     val context = LocalContext.current
     Button(
         onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Ɣ", Toast.LENGTH_SHORT).show()
         },
     ) {
         Text(
@@ -294,7 +282,7 @@ fun Board9() {
     }
     Button(
         onClick = {
-            Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Δ", Toast.LENGTH_SHORT).show()
         },
     ) {
         Text(
