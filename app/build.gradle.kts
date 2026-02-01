@@ -45,6 +45,9 @@ android {
 
 dependencies {
     implementation(libs.hilt.android)
+    implementation(libs.androidx.compose.ui.unit)
+    implementation(libs.androidx.compose.animation.core)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.okhttp)

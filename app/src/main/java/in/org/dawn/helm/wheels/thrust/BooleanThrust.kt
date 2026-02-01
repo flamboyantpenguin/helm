@@ -19,7 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -57,8 +57,8 @@ fun BooleanThrust() {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    var acc by remember { mutableStateOf(0f) }
-    var dir by remember { mutableStateOf(0f) }
+    var acc by remember { mutableFloatStateOf(0f) }
+    var dir by remember { mutableFloatStateOf(0f) }
 
     val viewModel: SettingsViewModel = hiltViewModel()
     val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -151,7 +151,6 @@ fun Accelerator(acc: Float, onAccChanged: (Float) -> Unit) {
         //onTeaPrepared(tea.copy(level = it))
     }, valueRange = -1f..1f, steps = 1
     )
-
 }
 
 @Composable

@@ -27,6 +27,14 @@ val displayFontFamily = FontFamily(
     )
 )
 
+val emojiFont = FontFamily(
+    Font(
+        googleFont = GoogleFont("Noto Color Emoji"),
+        fontProvider = provider,
+    )
+)
+
+
 // Default Material 3 typography values
 val baseline = Typography()
 

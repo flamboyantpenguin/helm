@@ -41,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import `in`.org.dawn.helm.ui.gyro.Earth
 import `in`.org.dawn.helm.ui.settings.Config
 import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme
@@ -151,6 +152,23 @@ fun HelmApp() {
                     OutlinedButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
+                            navController.navigate("gyro")
+                        },
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.video_stable_24dp),
+                            modifier = Modifier.size(iconSize),
+                            contentDescription = "Video Stability",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Askew", style = MaterialTheme.typography.displayMedium
+                        )
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
                             navController.navigate("config")
                         },
                     ) {
@@ -190,6 +208,7 @@ fun HelmApp() {
         }
         composable("remote") { TVRemote() }
         composable("thrust") { BooleanThrust() }
+        composable("gyro") { Earth() }
         composable(route = "config") { Config() }
         composable(route = "about") { About() }
     }
