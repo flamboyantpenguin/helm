@@ -1,4 +1,4 @@
-package `in`.org.dawn.helm.remote
+package `in`.org.dawn.helm.wheels.remote
 
 import android.content.res.Configuration
 import android.widget.Toast
@@ -47,6 +47,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import `in`.org.dawn.helm.shapes.DrawShape
 import kotlinx.coroutines.launch
 import kotlin.math.pow
@@ -133,10 +136,14 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
 
     var currentPosition by remember { mutableStateOf<Position?>(null) }
 
+    val viewModel: SettingsViewModel = hiltViewModel()
+    val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state = settingsState.steer
+
     LaunchedEffect(offsetX.value, offsetY.value) {
 
         val newPosition = getPosition(
-            isPrecise = true,
+            isPrecise = state.isPrecise,
             offset = Offset(offsetX.value, offsetY.value),
             buttonSizePx = buttonSizePx
         )

@@ -40,9 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import `in`.org.dawn.helm.remote.TVRemote
+import dagger.hilt.android.AndroidEntryPoint
+import `in`.org.dawn.helm.ui.settings.Config
+import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,7 +150,7 @@ fun HelmApp() {
                     OutlinedButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-
+                            navController.navigate("config")
                         },
                     ) {
                         Icon(
@@ -185,6 +188,7 @@ fun HelmApp() {
             }
         }
         composable("remote") { TVRemote() }
+        composable(route = "config") { Config() }
         composable(route = "about") { About() }
     }
 }

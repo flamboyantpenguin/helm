@@ -25,7 +25,7 @@ import `in`.org.dawn.helm.drawGlowCircle
 import `in`.org.dawn.helm.drawGlowLine
 import `in`.org.dawn.helm.drawGlowRect
 import `in`.org.dawn.helm.drawGlowTriangle
-import `in`.org.dawn.helm.remote.Position
+import `in`.org.dawn.helm.wheels.remote.Position
 
 @Composable
 fun DrawShape(

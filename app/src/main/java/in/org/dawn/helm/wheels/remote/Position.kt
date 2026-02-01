@@ -5,7 +5,7 @@
  * Original Source: https://github.com/MohamedRejeb/Compose-Interactive-Gamepad
  */
 
-package `in`.org.dawn.helm.remote
+package `in`.org.dawn.helm.wheels.remote
 
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
