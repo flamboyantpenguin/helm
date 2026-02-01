@@ -19,6 +19,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,7 +33,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.R
 import `in`.org.dawn.helm.prefs.LanternState
-import `in`.org.dawn.helm.prefs.SteerState
+import `in`.org.dawn.helm.prefs.RemoteState
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,8 +64,8 @@ fun Config() {
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            Steer(
-                state = state.steer,
+            Remote(
+                state = state.remote,
                 onSettingsChanged = { key, value -> viewModel.updateSetting(key, value) })
             Lantern(
                 state = state.lantern,
@@ -73,9 +76,10 @@ fun Config() {
 
 
 @Composable
-fun Steer(state: SteerState, onSettingsChanged: (String, Any) -> Unit) {
+fun Remote(state: RemoteState, onSettingsChanged: (String, Any) -> Unit) {
+    var isPrecise by remember(state.isPrecise) { mutableStateOf(state.isPrecise) }
     Text(
-        "Steer",
+        "Remote",
         color = MaterialTheme.colorScheme.primary,
         style = MaterialTheme.typography.displayMedium
     )
@@ -85,25 +89,29 @@ fun Steer(state: SteerState, onSettingsChanged: (String, Any) -> Unit) {
         Text("Precise Control")
         Spacer(Modifier.weight(1f))
         Switch(
-            checked = state.isPrecise,
-            onCheckedChange = { onSettingsChanged("steer_precise_control", it) },
-            thumbContent = if (state.isPrecise) {
-                {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
-            })
+            checked = isPrecise, onCheckedChange = {
+            isPrecise = it
+            onSettingsChanged("remote_precise_control", it)
+        }, thumbContent = if (isPrecise) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        })
     }
 }
 
 @Composable
 fun Lantern(state: LanternState, onSettingsChanged: (String, Any) -> Unit) {
+    var hostName by remember(state.host) { mutableStateOf(state.host) }
+    var token by remember(state.token) { mutableStateOf(state.token) }
+    var isSecure by remember(state.secure) { mutableStateOf(state.secure) }
     Text(
         "Lantern",
         color = MaterialTheme.colorScheme.primary,
@@ -111,10 +119,41 @@ fun Lantern(state: LanternState, onSettingsChanged: (String, Any) -> Unit) {
     )
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = state.host,
+        value = hostName,
         label = { Text(text = "Hostname") },
         onValueChange = {
-            onSettingsChanged("lantern_host_name", it)
+            hostName = it
+            onSettingsChanged("lantern_host_name", hostName)
         })
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = token,
+        label = { Text(text = "Token") },
+        onValueChange = {
+            token = it
+            onSettingsChanged("lantern_token", token)
+        })
+    Row(
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Websocket Secure?")
+        Spacer(Modifier.weight(1f))
+        Switch(
+            checked = isSecure, onCheckedChange = {
+            isSecure = it
+            onSettingsChanged("lantern_secure", it)
+        }, thumbContent = if (isSecure) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        })
+    }
 
 }

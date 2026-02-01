@@ -1,6 +1,7 @@
 package `in`.org.dawn.helm.wheels.remote
 
 import android.content.res.Configuration
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import `in`.org.dawn.helm.shapes.DrawShape
 import kotlinx.coroutines.launch
@@ -138,7 +140,13 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
 
     val viewModel: SettingsViewModel = hiltViewModel()
     val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
-    val state = settingsState.steer
+    val state = settingsState.remote
+    val lanternState = settingsState.lantern
+
+    LaunchedEffect(lanternState.host) {
+        Log.i("Meow", "Meow")
+        Lantern.connect(lanternState.host)
+    }
 
     LaunchedEffect(offsetX.value, offsetY.value) {
 
@@ -149,6 +157,7 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
         )
 
         currentPosition = newPosition
+        Lantern.sendCommand(currentPosition?.getInstruction() ?: "ER", token = lanternState.token)
     }
 
     Column(
@@ -247,7 +256,9 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
                     }
                     .size(buttonSize)
                     .padding(8.dp),
-                    isSelected = (position == currentPosition) || (currentPosition?.contains(position) == true),
+                    isSelected = (position == currentPosition) || (currentPosition?.contains(
+                        position
+                    ) == true),
                     position = position)
             }
         }

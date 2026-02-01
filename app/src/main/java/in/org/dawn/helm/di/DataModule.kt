@@ -7,7 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import `in`.org.dawn.helm.prefs.LanternRepository
-import `in`.org.dawn.helm.prefs.SteerRepository
+import `in`.org.dawn.helm.prefs.RemoteRepository
 import javax.inject.Singleton
 
 @Module
@@ -22,7 +22,7 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideSteerRepo(@ApplicationContext context: Context): SteerRepository {
-        return SteerRepository(context)
+    fun provideSteerRepo(@ApplicationContext context: Context): RemoteRepository {
+        return RemoteRepository(context)
     }
 }
