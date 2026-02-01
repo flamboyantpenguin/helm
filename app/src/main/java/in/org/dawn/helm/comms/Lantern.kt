@@ -10,8 +10,9 @@ object Lantern {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
 
-    fun connect(hostName: String) {
-        val request = Request.Builder().url("ws://$hostName").build()
+    fun connect(hostName: String, secure: Boolean) {
+        val url = if (secure) "wss://$hostName" else "ws://$hostName"
+        val request = Request.Builder().url(url).build()
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 println("Connected to ESP!")
