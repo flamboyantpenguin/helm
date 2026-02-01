@@ -44,6 +44,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import `in`.org.dawn.helm.ui.settings.Config
 import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme
+import `in`.org.dawn.helm.wheels.thrust.BooleanThrust
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -133,7 +134,7 @@ fun HelmApp() {
                     OutlinedButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            //navController.navigate("drive")
+                            navController.navigate("thrust")
                         },
                     ) {
                         Icon(
@@ -188,6 +189,7 @@ fun HelmApp() {
             }
         }
         composable("remote") { TVRemote() }
+        composable("thrust") { BooleanThrust() }
         composable(route = "config") { Config() }
         composable(route = "about") { About() }
     }

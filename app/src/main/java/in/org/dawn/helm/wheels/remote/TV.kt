@@ -1,7 +1,6 @@
 package `in`.org.dawn.helm.wheels.remote
 
 import android.content.res.Configuration
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
@@ -144,8 +143,7 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
     val lanternState = settingsState.lantern
 
     LaunchedEffect(lanternState.host) {
-        Log.i("Meow", "Meow")
-        Lantern.connect(lanternState.host)
+        Lantern.connect(lanternState.host, lanternState.secure)
     }
 
     LaunchedEffect(offsetX.value, offsetY.value) {
