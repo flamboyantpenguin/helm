@@ -66,12 +66,13 @@ fun TVRemote() {
             Row(
                 modifier = Modifier
                     .padding(innerPadding)
+                    .padding(16.dp)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Tray(true, { Board8() })
                 Tray(true, { Board9() })
-                Spacer(Modifier.padding(16.dp))
+                Spacer(Modifier.padding(70.dp))
                 Controller(true, 60.dp)
             }
         } else {
@@ -150,7 +151,7 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
             Modifier.fillMaxWidth()
         },
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Bottom
     ) {
 
         Box(
