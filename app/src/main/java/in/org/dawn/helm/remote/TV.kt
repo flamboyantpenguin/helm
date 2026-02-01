@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import `in`.org.dawn.helm.DrawShape
+import `in`.org.dawn.helm.shapes.DrawShape
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -135,7 +135,9 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
     LaunchedEffect(offsetX.value, offsetY.value) {
 
         val newPosition = getPosition(
-            offset = Offset(offsetX.value, offsetY.value), buttonSizePx = buttonSizePx
+            isPrecise = true,
+            offset = Offset(offsetX.value, offsetY.value),
+            buttonSizePx = buttonSizePx
         )
 
         currentPosition = newPosition
@@ -222,9 +224,9 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
                 }
             }
 
-            Position.values().forEach { position ->
+            Position.entries.forEach { position ->
                 val offset = position.getOffset(buttonSizePx)
-                MyButton(modifier = Modifier
+                DirectionButton(modifier = Modifier
                     .offset {
                         IntOffset(
                             x = offset.x.roundToInt(), y = offset.y.roundToInt()
@@ -237,7 +239,7 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
                     }
                     .size(buttonSize)
                     .padding(8.dp),
-                    isSelected = position == currentPosition,
+                    isSelected = (position == currentPosition) || (currentPosition?.contains(position) == true),
                     position = position)
             }
         }
@@ -292,7 +294,7 @@ fun Board9() {
 }
 
 @Composable
-fun MyButton(
+fun DirectionButton(
     modifier: Modifier = Modifier,
     isSelected: Boolean,
     position: Position,

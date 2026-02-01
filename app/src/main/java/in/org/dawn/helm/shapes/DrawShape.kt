@@ -5,7 +5,7 @@
  * Original Source: https://github.com/MohamedRejeb/Compose-Interactive-Gamepad
  */
 
-package `in`.org.dawn.helm
+package `in`.org.dawn.helm.shapes
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +21,10 @@ import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import `in`.org.dawn.helm.drawGlowCircle
+import `in`.org.dawn.helm.drawGlowLine
+import `in`.org.dawn.helm.drawGlowRect
+import `in`.org.dawn.helm.drawGlowTriangle
 import `in`.org.dawn.helm.remote.Position
 
 @Composable
@@ -153,5 +157,7 @@ fun DrawShape(
 
             }
         }
+
+        else -> {}
     }
 }

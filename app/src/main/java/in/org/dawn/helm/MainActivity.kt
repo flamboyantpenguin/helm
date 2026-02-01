@@ -130,6 +130,23 @@ fun HelmApp() {
                     OutlinedButton(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
+                            //navController.navigate("drive")
+                        },
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.rocket_launch_24dp),
+                            modifier = Modifier.size(iconSize),
+                            contentDescription = "Rocket Launch",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Thrust", style = MaterialTheme.typography.displayMedium
+                        )
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
 
                         },
                     ) {
