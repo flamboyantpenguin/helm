@@ -1,4 +1,4 @@
-package `in`.org.dawn.helm.ui.gyro
+package `in`.org.dawn.helm.wheels.gyro
 
 import android.content.res.Configuration
 import android.widget.Toast
@@ -68,7 +68,7 @@ fun Earth() {
     LaunchedEffect(acc, dir) {
         while (acc != 0 || dir != 0) {
             Lantern.sendCommand(getSignal(acc, dir), token = lanternState.token)
-            delay(500)
+            delay(lanternState.delay)
         }
     }
 

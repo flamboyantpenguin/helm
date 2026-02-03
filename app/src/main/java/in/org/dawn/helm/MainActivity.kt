@@ -41,7 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import `in`.org.dawn.helm.ui.gyro.Earth
+import `in`.org.dawn.helm.wheels.gyro.Earth
 import `in`.org.dawn.helm.ui.settings.Config
 import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme

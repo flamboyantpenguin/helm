@@ -22,19 +22,6 @@ enum class Position {
             else -> false
         }
     }
-
-    fun getInstruction(): String {
-        return when (this) {
-            TopRight -> "TR"
-            TopLeft -> "TL"
-            BottomRight -> "BR"
-            BottomLeft -> "BL"
-            Top -> "T0"
-            Right -> "R0"
-            Bottom -> "B0"
-            Left -> "L0"
-        }
-    }
 }
 
 fun Position.getOffset(

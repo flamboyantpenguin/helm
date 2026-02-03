@@ -21,6 +21,6 @@ object Lantern {
     }
 
     fun sendCommand(instruction: String, token: String) {
-        webSocket?.send("$token~$instruction")
+        webSocket?.send("$token~{$instruction}")
     }
 }

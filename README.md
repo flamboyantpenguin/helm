@@ -1,10 +1,10 @@
 # Helm
 
-A simple gamepad controller for websocket enabled devices
+Collection of gamepad controllers for websocket clients
 
 ```txt
 Helm
 
-Last Updated: 01-02-2026
+Last Updated: 04-02-2026
 ペンギン
 ```

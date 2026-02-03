@@ -50,12 +50,30 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.comms.Lantern
-import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import `in`.org.dawn.helm.shapes.DrawShape
+import `in`.org.dawn.helm.ui.settings.SettingsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+
+
+fun offsetMapper(x: Float, y: Float, maxSize: Float, isDifferential: Boolean): Pair<Float, Float> {
+    val nX = (x / maxSize) * 100
+    val nY = -(y / maxSize) * 100
+    if (isDifferential) {
+        val left = nY + nX
+        val right = nY - nX
+        val max = maxOf(abs(left), abs(right), 100f)
+        return Pair(
+            (left / max) * 100f,
+            (right / max) * 100f
+        )
+    }
+    return Pair(nX, nY)
+}
 
 @Preview
 @Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
@@ -149,13 +167,20 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
     LaunchedEffect(offsetX.value, offsetY.value) {
 
         val newPosition = getPosition(
-            isPrecise = state.isPrecise,
+            isPrecise = true,
             offset = Offset(offsetX.value, offsetY.value),
             buttonSizePx = buttonSizePx
         )
 
         currentPosition = newPosition
-        Lantern.sendCommand(currentPosition?.getInstruction() ?: "ER", token = lanternState.token)
+
+        val (cX, cY) = offsetMapper(offsetX.value, offsetY.value, dragSizePx, state.isTank)
+        while (abs(cX) > 0.1f || abs(cY) > 0.1f) {
+            Lantern.sendCommand(
+                "$cX:$cY", token = lanternState.token
+            )
+            delay(lanternState.delay)
+        }
     }
 
     Column(

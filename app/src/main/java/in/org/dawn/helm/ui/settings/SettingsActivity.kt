@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.R
@@ -45,17 +47,17 @@ fun Config() {
         modifier = Modifier.fillMaxSize(), topBar = {
             TopAppBar(
                 colors = topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
-            ), title = {
-                Text(stringResource(R.string.app_name))
-            }, navigationIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_launcher_foreground),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    contentDescription = "App Logo"
-                )
-            })
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ), title = {
+                    Text(stringResource(R.string.app_name))
+                }, navigationIcon = {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_launcher_foreground),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = "App Logo"
+                    )
+                })
         }) { innerPadding ->
 
         Column(
@@ -77,7 +79,7 @@ fun Config() {
 
 @Composable
 fun Remote(state: RemoteState, onSettingsChanged: (String, Any) -> Unit) {
-    var isPrecise by remember(state.isPrecise) { mutableStateOf(state.isPrecise) }
+    var isPrecise by remember(state.isTank) { mutableStateOf(state.isTank) }
     Text(
         "Remote",
         color = MaterialTheme.colorScheme.primary,
@@ -86,24 +88,24 @@ fun Remote(state: RemoteState, onSettingsChanged: (String, Any) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Precise Control")
+        Text("Skid Steering")
         Spacer(Modifier.weight(1f))
         Switch(
             checked = isPrecise, onCheckedChange = {
-            isPrecise = it
-            onSettingsChanged("remote_precise_control", it)
-        }, thumbContent = if (isPrecise) {
-            {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    contentDescription = null,
-                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                )
-            }
-        } else {
-            null
-        })
+                isPrecise = it
+                onSettingsChanged("remote_is_tank", it)
+            }, thumbContent = if (isPrecise) {
+                {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                }
+            } else {
+                null
+            })
     }
 }
 
@@ -112,6 +114,8 @@ fun Lantern(state: LanternState, onSettingsChanged: (String, Any) -> Unit) {
     var hostName by remember(state.host) { mutableStateOf(state.host) }
     var token by remember(state.token) { mutableStateOf(state.token) }
     var isSecure by remember(state.secure) { mutableStateOf(state.secure) }
+    var sendDelay by remember(state.delay) { mutableLongStateOf(state.delay) }
+
     Text(
         "Lantern",
         color = MaterialTheme.colorScheme.primary,
@@ -140,20 +144,32 @@ fun Lantern(state: LanternState, onSettingsChanged: (String, Any) -> Unit) {
         Spacer(Modifier.weight(1f))
         Switch(
             checked = isSecure, onCheckedChange = {
-            isSecure = it
-            onSettingsChanged("lantern_secure", it)
-        }, thumbContent = if (isSecure) {
-            {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    contentDescription = null,
-                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                )
-            }
-        } else {
-            null
-        })
+                isSecure = it
+                onSettingsChanged("lantern_secure", it)
+            }, thumbContent = if (isSecure) {
+                {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                }
+            } else {
+                null
+            })
     }
-
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = sendDelay.toString(),
+        label = { Text(text = "Transmission Delay") },
+        onValueChange = {
+            if (it.isDigitsOnly()) { // Basic validation
+                sendDelay = it.toLong()
+                onSettingsChanged("lantern_delay", sendDelay)
+            }
+            else {
+                sendDelay = 0
+            }
+        })
 }

@@ -1,4 +1,4 @@
-package `in`.org.dawn.helm.ui.gyro
+package `in`.org.dawn.helm.wheels.gyro
 
 import android.content.Context
 import android.hardware.Sensor
