@@ -1,13 +1,14 @@
 package `in`.org.dawn.helm
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,9 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,25 +26,31 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import `in`.org.dawn.helm.wheels.gyro.Earth
+import `in`.org.dawn.helm.ui.about.About
 import `in`.org.dawn.helm.ui.settings.Config
-import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.ui.theme.AppTheme
+import `in`.org.dawn.helm.wheels.gyro.Earth
+import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.wheels.thrust.BooleanThrust
 
 @AndroidEntryPoint
@@ -64,30 +70,34 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HelmApp() {
     val iconSize = 90.dp
-    val navController = rememberNavController()
     val context = LocalContext.current
+    val navController = rememberNavController()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val isLandScape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val versionName = remember {
-        context.packageManager.getPackageInfo(context.packageName, 0)
-            .versionName ?: "?"
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
     }
 
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             Scaffold(
-                modifier = Modifier.fillMaxSize(), topBar = {
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
                     TopAppBar(
                         colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    ), title = {
-                        Text(stringResource(R.string.app_name))
-                    }, navigationIcon = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_launcher_foreground),
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            contentDescription = "App Logo"
-                        )
-                    })
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.primary,
+                        ), title = {
+                            Text(
+                                stringResource(R.string.app_name),
+                                Modifier.fillMaxWidth(),
+                                textAlign = if (isLandScape) TextAlign.Left else TextAlign.Center,
+                                style = MaterialTheme.typography.displayLarge,
+                            )
+                        }, scrollBehavior = scrollBehavior
+                    )
                 }) { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -95,195 +105,119 @@ fun HelmApp() {
                         .padding(innerPadding)
                         .padding(10.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    OutlinedButton(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            //navController.navigate("drive")
-                        },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        maxItemsInEachRow = 3
                     ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                            modifier = Modifier.size(iconSize),
-                            contentDescription = "Steer",
-                            tint = MaterialTheme.colorScheme.primary
+                        MenuButton(
+                            navController,
+                            "",
+                            iconSize,
+                            "Steer",
+                            R.drawable.helm_24dp,
+                            "Steer",
+                            isLandScape
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Steer", style = MaterialTheme.typography.displayMedium
+                        MenuButton(
+                            navController,
+                            "remote",
+                            iconSize,
+                            "Remote",
+                            R.drawable.tv_remote_24dp,
+                            "Remote",
+                            isLandScape
+                        )
+                        MenuButton(
+                            navController,
+                            "thrust",
+                            iconSize,
+                            "Thrust",
+                            R.drawable.rocket_launch_24dp,
+                            "Rocket Launch",
+                            isLandScape
+                        )
+                        MenuButton(
+                            navController,
+                            "askew",
+                            iconSize,
+                            "Askew",
+                            R.drawable.video_stable_24dp,
+                            "Video Stability",
+                            isLandScape
+                        )
+                        MenuButton(
+                            navController,
+                            "config",
+                            iconSize,
+                            "Config",
+                            R.drawable.anchor_24dp,
+                            "Configuration",
+                            isLandScape
+                        )
+                        MenuButton(
+                            navController,
+                            "about",
+                            iconSize,
+                            "About",
+                            R.drawable.info_24dp,
+                            "About",
+                            isLandScape
                         )
                     }
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            navController.navigate("remote")
-                        },
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.tv_remote_24dp),
-                            modifier = Modifier.size(iconSize - 20.dp),
-                            contentDescription = "Remote",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Remote", style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            navController.navigate("thrust")
-                        },
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.rocket_launch_24dp),
-                            modifier = Modifier.size(iconSize),
-                            contentDescription = "Rocket Launch",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Thrust", style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            navController.navigate("gyro")
-                        },
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.video_stable_24dp),
-                            modifier = Modifier.size(iconSize),
-                            contentDescription = "Video Stability",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Askew", style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            navController.navigate("config")
-                        },
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.anchor_24dp),
-                            modifier = Modifier.size(iconSize),
-                            contentDescription = "Configuration",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Config", style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            navController.navigate("about")
-                        },
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.info_24dp),
-                            modifier = Modifier.size(iconSize),
-                            contentDescription = "About",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "About", style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Version $versionName")
-                }
 
+                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(text = "Version $versionName", color = MaterialTheme.colorScheme.secondary)
+                }
             }
         }
         composable("remote") { TVRemote() }
         composable("thrust") { BooleanThrust() }
-        composable("gyro") { Earth() }
+        composable("askew") { Earth() }
         composable(route = "config") { Config() }
         composable(route = "about") { About() }
     }
 }
 
 @Composable
-fun About() {
-    val uriHandler = LocalUriHandler.current
-    val repoUri = stringResource(R.string.repo_url)
-    val deploymentRepoUri = stringResource(R.string.deployment_repo_url)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-
+fun MenuButton(
+    navController: NavHostController,
+    route: String,
+    iconSize: Dp,
+    text: String,
+    icon: Int,
+    iconDesc: String,
+    isLandscape: Boolean = false,
+) {
+    OutlinedButton(
+        onClick = {
+            if (route.isNotEmpty()) navController.navigate(route)
+        },
+        Modifier
+            .fillMaxWidth(if (isLandscape) 0.333f else 0.5f)
+            .padding(horizontal = 8.dp),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.tertiary)
     ) {
-        Text(
-            stringResource(R.string.app_name),
-            style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-            stringResource(R.string.description),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = {
-                    uriHandler.openUri(repoUri)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary, // Custom background color
-                    contentColor = MaterialTheme.colorScheme.onTertiary, // Custom content (text/icon) color
-                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryFixedDim, // Custom disabled background
-                    disabledContentColor = MaterialTheme.colorScheme.onTertiaryFixed // Custom disabled content color
-                ),
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.code_24dp),
-                    contentDescription = "Code",
-                    tint = MaterialTheme.colorScheme.onTertiary
-                )
-                Text(
-                    "Project Repo",
-                    color = MaterialTheme.colorScheme.onTertiary
-                )
-            }
-            Button(
-                onClick = {
-                    uriHandler.openUri(deploymentRepoUri)
-                }, colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary, // Custom background color
-                    contentColor = MaterialTheme.colorScheme.onTertiary, // Custom content (text/icon) color
-                    disabledContainerColor = MaterialTheme.colorScheme.tertiaryFixedDim, // Custom disabled background
-                    disabledContentColor = MaterialTheme.colorScheme.onTertiaryFixed // Custom disabled content color
-                )
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.deployed_code_24dp),
-                    contentDescription = "Deployed Code",
-                    tint = MaterialTheme.colorScheme.onTertiary
-                )
-                Text(
-                    "CI/CD",
-                    color = MaterialTheme.colorScheme.onTertiary
-                )
-            }
+            Icon(
+                imageVector = ImageVector.vectorResource(icon),
+                modifier = Modifier.size(iconSize),
+                contentDescription = iconDesc,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
     }
 }

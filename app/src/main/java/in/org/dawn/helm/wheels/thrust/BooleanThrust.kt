@@ -37,19 +37,6 @@ import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
 
-
-fun getSignal(a: Int, d: Int): String = when (a to d) {
-    1 to 1   -> "TR"
-    1 to -1  -> "TL"
-    -1 to 1  -> "BR"
-    -1 to -1 -> "BL"
-    0 to 1   -> "R0"
-    0 to -1  -> "L0"
-    1 to 0   -> "T0"
-    -1 to 0  -> "B0"
-    else     -> ""
-}
-
 @Composable
 @Preview
 @Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
@@ -62,6 +49,8 @@ fun BooleanThrust() {
 
     val viewModel: SettingsViewModel = hiltViewModel()
     val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val thrustState = settingsState.thrust
     val lanternState = settingsState.lantern
 
     LaunchedEffect(lanternState.host) {
@@ -70,7 +59,7 @@ fun BooleanThrust() {
 
     LaunchedEffect(acc, dir) {
         while (acc.toInt() != 0 || dir.toInt() != 0) {
-            Lantern.sendCommand(getSignal(acc.toInt(), dir.toInt()), token = lanternState.token)
+            Lantern.sendCommand("$acc:$dir", token = lanternState.token)
             delay(500)
         }
     }
@@ -89,12 +78,12 @@ fun BooleanThrust() {
                 Row(
                     Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Director(dir) { dir = it }
+                    Director(dir, thrustState.stepValue, lanternState.power.toFloat()) { dir = it }
                     Tray(true) {
                         Board8()
                         Board9()
                     }
-                    Accelerator(acc) { acc = it }
+                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) { acc = it }
                 }
             }
         } else {
@@ -108,10 +97,10 @@ fun BooleanThrust() {
                 Row(
                     Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Director(dir) {
+                    Director(dir, thrustState.stepValue, lanternState.power.toFloat()) {
                         dir = it
                     }
-                    Accelerator(acc) { acc = it }
+                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) { acc = it }
                 }
                 Tray(false) {
                     Board8()
@@ -123,7 +112,7 @@ fun BooleanThrust() {
 }
 
 @Composable
-fun Accelerator(acc: Float, onAccChanged: (Float) -> Unit) {
+fun Accelerator(acc: Float,  stepValue: Int, maxPower: Float, onAccChanged: (Float) -> Unit) {
     Slider(
         modifier = Modifier
             .graphicsLayer {
@@ -148,13 +137,12 @@ fun Accelerator(acc: Float, onAccChanged: (Float) -> Unit) {
             .width(300.dp) // Set the desired *vertical* height here
         .height(50.dp), value = acc, onValueChange = {
         onAccChanged(it)
-        //onTeaPrepared(tea.copy(level = it))
-    }, valueRange = -1f..1f, steps = 1
+    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 2
     )
 }
 
 @Composable
-fun Director(dir: Float, onDirChanged: (Float) -> Unit) {
+fun Director(dir: Float, stepValue: Int, maxPower: Float, onDirChanged: (Float) -> Unit) {
     Slider(
         modifier = Modifier
             .graphicsLayer {
@@ -179,7 +167,7 @@ fun Director(dir: Float, onDirChanged: (Float) -> Unit) {
             .width(300.dp) // Set the desired *vertical* height here
         .height(50.dp), value = dir, onValueChange = {
         onDirChanged(it)
-    }, valueRange = -1f..1f, steps = 1
+    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 2
     )
 
 }

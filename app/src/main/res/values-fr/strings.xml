@@ -2,4 +2,14 @@
 <resources>
     <string name="app_name">Barre</string>
     <string name="description">Collection de manettes de jeu simples pour les appareils compatibles avec WebSockets.</string>
+    <string name="gamepad_name_thrust">poussée</string>
+    <string name="gamepad_name_remote">Télécommande</string>
+    <string name="gamepad_name_askew">De travers</string>
+    <string name="gamepad_name_steer">Diriger</string>
+    <string name="gamepad_desc_steer">À venir</string>
+    <string name="gamepad_desc_remote">Une manette de jeu inspirée d\'une télécommande de télévision. Faites glisser le bouton central le long du cercle extérieur pour contrôler le mouvement. La valeur « x » correspond au décalage horizontal cartésien et la valeur « y » au décalage vertical cartésien. Pour la direction Ackermann, associez la valeur « x » à la rotation de l\'essieu et la valeur « y » à la vitesse des moteurs. Pour la direction différentielle, activez-la d\'abord dans les paramètres de configuration. Cela transforme les valeurs « x » et « y » à l\'aide du modèle cinématique. Associez ensuite la valeur « x » aux moteurs gauche et la valeur « y » aux moteurs droit. Ce système a été testé avec succès.</string>
+    <string name="gamepad_desc_thrust">Thrust vous permet de contrôler les valeurs `x` et `y` indépendamment à l\'aide d\'un curseur. Associez les valeurs de manière similaire à celles d\'une manette de jeu pour simuler la direction Ackermann et la direction différentielle. Vous pouvez inverser les commandes dans les paramètres de configuration selon vos préférences.</string>
+    <string name="gamepad_desc_askew">Manette de jeu contrôlée par l\'accéléromètre. Inclinez votre téléphone sur le côté pour modifier les valeurs de l\'axe X. Utilisez les boutons haut et bas pour accélérer ou décélérer.</string>
+    <string name="gamepad_info">Les manettes de jeu sont un type d\'interface utilisateur qui permet d\'envoyer des valeurs `x` et `y` via des websockets. Cela vous permet d\'associer ces valeurs à vos actionneurs.</string>
+    <string name="lantern_info">Lantern est le sous-système de communication. Les messages sont envoyés via des websockets. Connectez le téléphone et l\'appareil récepteur au même réseau. Mettez ensuite à jour l\'adresse IP, le délai et le statut de sécurité dans les paramètres de configuration. Ce réglage s\'applique à toutes les manettes de jeu.</string>
 </resources>

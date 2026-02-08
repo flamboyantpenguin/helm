@@ -2,5 +2,15 @@
     <string name="app_name">Helm</string>
     <string name="description">Collection of simple gamepads for websocket enabled devices</string>
     <string name="repo_url" translatable="false">https://github.com/flamboyantpenguin/helm</string>
+    <string name="gamepad_name_steer">Steer</string>
     <string name="deployment_repo_url" translatable="false">https://code.dawn.org.in/flamboyantpenguin/-/packages/generic/helm</string>
+    <string name="gamepad_name_thrust">Thrust</string>
+    <string name="gamepad_name_remote">Remote</string>
+    <string name="gamepad_name_askew">Askew</string>
+    <string name="gamepad_desc_steer">Coming Soon…</string>
+    <string name="gamepad_desc_remote">A TV Remote inspired remote gamepad. Drag the central button around the outer circle to control. The `x` value is the cartesian horizontal offset and `y` is the cartesian vertical offset. For Ackermann steering, map the `x` value to the axle rotation and `y` value to the motor speeds. For differential steering, first turn it on in config. This transforms the `x` and `y` using the Kinematic Model. Then map the `x` value to left motors and `y` value to the right motors. This is tested successfully.</string>
+    <string name="gamepad_desc_thrust">"Thrust allows you to control the `x` and `y` values independently using a slider. Map the values similar to the Remote gamepad to simulate Ackermann and differential steering. You can invert controls in config to suit your way "</string>
+    <string name="gamepad_desc_askew">Accelerometer controlled gamepad. Tilt your phone sideways to turn the change the `x` values. Use up and down buttons to accelerate or decelerate.</string>
+    <string name="gamepad_info">"Gamepads are different types of UI that help you send `x` and `y` values via websockets. This allows you to map these values to your actuators. "</string>
+    <string name="lantern_info">"Lantern is the communication subsystem. Messages are sent via websockets. Connect the phone and the receiving device to the same network. Then update the IP address, delay, security status and token in Config. This setting is global to all gamepads. "</string>
 </resources>

@@ -8,6 +8,8 @@ import `in`.org.dawn.helm.prefs.LanternRepository
 import `in`.org.dawn.helm.prefs.LanternState
 import `in`.org.dawn.helm.prefs.RemoteRepository
 import `in`.org.dawn.helm.prefs.RemoteState
+import `in`.org.dawn.helm.prefs.ThrustRepository
+import `in`.org.dawn.helm.prefs.ThrustState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -16,12 +18,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
-    val lantern: LanternState = LanternState(), val remote: RemoteState = RemoteState()
+    val lantern: LanternState = LanternState(),
+    val remote: RemoteState = RemoteState(),
+    val thrust: ThrustState = ThrustState()
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val lanternRepo: LanternRepository, private val remoteRepo: RemoteRepository
+    private val lanternRepo: LanternRepository,
+    private val remoteRepo: RemoteRepository,
+    private val thrustRepo: ThrustRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
@@ -35,6 +41,7 @@ class SettingsViewModel @Inject constructor(
             when {
                 key.startsWith("lantern_") -> lanternRepo.update(key, value)
                 key.startsWith("remote_") -> remoteRepo.update(key, value)
+                key.startsWith("thrust_") -> thrustRepo.update(key, value)
                 else -> Log.e("SettingsVM | Error", "Orphan key detected: $key")
             }
         }

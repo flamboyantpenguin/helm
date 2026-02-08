@@ -60,16 +60,16 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-fun offsetMapper(x: Float, y: Float, maxSize: Float, isDifferential: Boolean): Pair<Float, Float> {
-    val nX = (x / maxSize) * 100
-    val nY = -(y / maxSize) * 100
+fun offsetMapper(x: Float, y: Float, maxSize: Float, maxPower: Int, isDifferential: Boolean): Pair<Float, Float> {
+    val nX = (x / maxSize) * maxPower
+    val nY = -(y / maxSize) * maxPower
     if (isDifferential) {
         val left = nY + nX
         val right = nY - nX
         val max = maxOf(abs(left), abs(right), 100f)
         return Pair(
-            (left / max) * 100f,
-            (right / max) * 100f
+            (left / max) * maxPower,
+            (right / max) * maxPower
         )
     }
     return Pair(nX, nY)
@@ -174,7 +174,7 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
 
         currentPosition = newPosition
 
-        val (cX, cY) = offsetMapper(offsetX.value, offsetY.value, dragSizePx, state.isTank)
+        val (cX, cY) = offsetMapper(offsetX.value, offsetY.value, dragSizePx, lanternState.power, state.isTank)
         while (abs(cX) > 0.1f || abs(cY) > 0.1f) {
             Lantern.sendCommand(
                 "$cX:$cY", token = lanternState.token

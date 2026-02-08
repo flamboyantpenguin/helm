@@ -31,7 +31,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
-import `in`.org.dawn.helm.wheels.thrust.getSignal
 import kotlinx.coroutines.delay
 
 fun getSignal(a: Int, d: Int): String = when (a to d) {

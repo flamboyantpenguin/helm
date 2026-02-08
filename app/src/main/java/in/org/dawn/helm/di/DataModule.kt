@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import `in`.org.dawn.helm.prefs.LanternRepository
 import `in`.org.dawn.helm.prefs.RemoteRepository
+import `in`.org.dawn.helm.prefs.ThrustRepository
 import javax.inject.Singleton
 
 @Module
@@ -24,5 +25,11 @@ object DataModule {
     @Singleton
     fun provideSteerRepo(@ApplicationContext context: Context): RemoteRepository {
         return RemoteRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThrustRepo(@ApplicationContext context: Context): ThrustRepository {
+        return ThrustRepository(context)
     }
 }
