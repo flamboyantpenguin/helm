@@ -29,6 +29,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +42,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -48,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import `in`.org.dawn.helm.ui.about.About
 import `in`.org.dawn.helm.ui.settings.Config
+import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import `in`.org.dawn.helm.ui.theme.AppTheme
 import `in`.org.dawn.helm.wheels.gyro.Earth
 import `in`.org.dawn.helm.wheels.remote.TVRemote
@@ -55,11 +59,16 @@ import `in`.org.dawn.helm.wheels.thrust.BooleanThrust
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppTheme {
+            val viewModel: SettingsViewModel = hiltViewModel()
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val mainState = state.main
+
+            AppTheme(mainState.themeMode, mainState.isDynamic) {
                 HelmApp()
             }
         }

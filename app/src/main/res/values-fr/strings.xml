@@ -12,4 +12,8 @@
     <string name="gamepad_desc_askew">Manette de jeu contrôlée par l\'accéléromètre. Inclinez votre téléphone sur le côté pour modifier les valeurs de l\'axe X. Utilisez les boutons haut et bas pour accélérer ou décélérer.</string>
     <string name="gamepad_info">Les manettes de jeu sont un type d\'interface utilisateur qui permet d\'envoyer des valeurs `x` et `y` via des websockets. Cela vous permet d\'associer ces valeurs à vos actionneurs.</string>
     <string name="lantern_info">Lantern est le sous-système de communication. Les messages sont envoyés via des websockets. Connectez le téléphone et l\'appareil récepteur au même réseau. Mettez ensuite à jour l\'adresse IP, le délai et le statut de sécurité dans les paramètres de configuration. Ce réglage s\'applique à toutes les manettes de jeu.</string>
+    <string name="title_about">À propos</string>
+    <string name="title_settings">Paramètres</string>
+    <string name="title_app">Application</string>
+    <string name="title_lantern">Lanterne</string>
 </resources>

@@ -13,7 +13,7 @@ data class ThrustState(
     val stepValue: Int = 1,
 )
 
-private val Context.thrustDataStore by preferencesDataStore(name = "lantern_settings")
+private val Context.thrustDataStore by preferencesDataStore(name = "thrust_settings")
 
 class ThrustRepository(private val context: Context) {
 

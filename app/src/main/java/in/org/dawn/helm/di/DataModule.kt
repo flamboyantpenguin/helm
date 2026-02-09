@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import `in`.org.dawn.helm.prefs.LanternRepository
+import `in`.org.dawn.helm.prefs.MainRepository
 import `in`.org.dawn.helm.prefs.RemoteRepository
 import `in`.org.dawn.helm.prefs.ThrustRepository
 import javax.inject.Singleton
@@ -14,6 +15,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class) // This makes the repos live as long as the app
 object DataModule {
+
+    @Provides
+    @Singleton
+    fun provideMainRepo(@ApplicationContext context: Context): MainRepository {
+        return MainRepository(context)
+    }
 
     @Provides
     @Singleton

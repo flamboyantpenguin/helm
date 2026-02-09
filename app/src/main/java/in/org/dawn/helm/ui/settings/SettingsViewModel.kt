@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import `in`.org.dawn.helm.prefs.LanternRepository
 import `in`.org.dawn.helm.prefs.LanternState
+import `in`.org.dawn.helm.prefs.MainRepository
+import `in`.org.dawn.helm.prefs.MainState
 import `in`.org.dawn.helm.prefs.RemoteRepository
 import `in`.org.dawn.helm.prefs.RemoteState
 import `in`.org.dawn.helm.prefs.ThrustRepository
@@ -18,6 +20,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
+    val main: MainState = MainState(),
     val lantern: LanternState = LanternState(),
     val remote: RemoteState = RemoteState(),
     val thrust: ThrustState = ThrustState()
@@ -25,20 +28,25 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val mainRepo: MainRepository,
     private val lanternRepo: LanternRepository,
     private val remoteRepo: RemoteRepository,
     private val thrustRepo: ThrustRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
-        lanternRepo.settingsFlow, remoteRepo.settingsFlow
-    ) { lantern, remote ->
-        SettingsUiState(lantern, remote)
+        mainRepo.settingsFlow,
+        lanternRepo.settingsFlow,
+        remoteRepo.settingsFlow,
+        thrustRepo.settingsFlow
+    ) { main, lantern, remote, thrust ->
+        SettingsUiState(main, lantern, remote, thrust)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState())
 
     fun updateSetting(key: String, value: Any) {
         viewModelScope.launch {
             when {
+                key.startsWith("main_") -> mainRepo.update(key, value)
                 key.startsWith("lantern_") -> lanternRepo.update(key, value)
                 key.startsWith("remote_") -> remoteRepo.update(key, value)
                 key.startsWith("thrust_") -> thrustRepo.update(key, value)

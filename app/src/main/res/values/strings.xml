@@ -13,4 +13,8 @@
     <string name="gamepad_desc_askew">Accelerometer controlled gamepad. Tilt your phone sideways to turn the change the `x` values. Use up and down buttons to accelerate or decelerate.</string>
     <string name="gamepad_info">"Gamepads are different types of UI that help you send `x` and `y` values via websockets. This allows you to map these values to your actuators. "</string>
     <string name="lantern_info">"Lantern is the communication subsystem. Messages are sent via websockets. Connect the phone and the receiving device to the same network. Then update the IP address, delay, security status and token in Config. This setting is global to all gamepads. "</string>
+    <string name="title_about">About</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_app">App</string>
+    <string name="title_lantern">Lantern</string>
 </resources>

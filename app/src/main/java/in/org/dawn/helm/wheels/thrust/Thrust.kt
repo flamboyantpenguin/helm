@@ -150,7 +150,7 @@ fun Accelerator(acc: Float,  stepValue: Int, maxPower: Float, onAccChanged: (Flo
             .width(300.dp) // Set the desired *vertical* height here
         .height(50.dp), value = acc, onValueChange = {
         onAccChanged(it)
-    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 2
+    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 1
     )
 }
 
@@ -180,7 +180,7 @@ fun Director(dir: Float, stepValue: Int, maxPower: Float, onDirChanged: (Float) 
             .width(300.dp) // Set the desired *vertical* height here
         .height(50.dp), value = dir, onValueChange = {
         onDirChanged(it)
-    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 2
+    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 1
     )
 
 }
