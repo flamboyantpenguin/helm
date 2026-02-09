@@ -1,6 +1,8 @@
 package `in`.org.dawn.helm.wheels.thrust
 
+import android.app.Activity
 import android.content.res.Configuration
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -41,8 +44,18 @@ import kotlinx.coroutines.delay
 @Preview
 @Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 fun BooleanThrust() {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    DisposableEffect(Unit) {
+        val window = (context as Activity).window
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        onDispose {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     var acc by remember { mutableFloatStateOf(0f) }
     var dir by remember { mutableFloatStateOf(0f) }
