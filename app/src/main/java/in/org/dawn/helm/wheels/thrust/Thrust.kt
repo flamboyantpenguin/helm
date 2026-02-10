@@ -3,7 +3,6 @@ package `in`.org.dawn.helm.wheels.thrust
 import android.app.Activity
 import android.content.res.Configuration
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,11 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +32,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import `in`.org.dawn.helm.boards.Board7
+import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -72,7 +70,10 @@ fun BooleanThrust() {
 
     LaunchedEffect(acc, dir) {
         while (acc.toInt() != 0 || dir.toInt() != 0) {
-            Lantern.sendCommand("$acc:$dir", token = lanternState.token)
+            var x = acc; var y = dir
+            if (thrustState.invertControls) x = y.also { y = x }
+            if (thrustState.invertLR) y = -y
+            Lantern.sendActuation(x, y, token = lanternState.token)
             delay(500)
         }
     }
@@ -91,12 +92,16 @@ fun BooleanThrust() {
                 Row(
                     Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Director(dir, thrustState.stepValue, lanternState.power.toFloat()) { dir = it }
+                    Accelerator(dir, thrustState.stepValue, lanternState.power.toFloat()) { dir = it }
                     Tray(true) {
-                        Board8()
-                        Board9()
+                        Board7(Lantern)
                     }
-                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) { acc = it }
+                    Tray(true) {
+                        Board8(Lantern)
+                    }
+                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) {
+                        acc = it
+                    }
                 }
             }
         } else {
@@ -107,17 +112,21 @@ fun BooleanThrust() {
                     .padding(25.dp),
                 verticalArrangement = Arrangement.Center
             ) {
+                Tray(false) {
+                    Board7(Lantern)
+                }
                 Row(
                     Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Director(dir, thrustState.stepValue, lanternState.power.toFloat()) {
+                    Accelerator(dir, thrustState.stepValue, lanternState.power.toFloat()) {
                         dir = it
                     }
-                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) { acc = it }
+                    Accelerator(acc, thrustState.stepValue, lanternState.power.toFloat()) {
+                        acc = it
+                    }
                 }
                 Tray(false) {
-                    Board8()
-                    Board9()
+                    Board8(Lantern)
                 }
             }
         }
@@ -125,7 +134,7 @@ fun BooleanThrust() {
 }
 
 @Composable
-fun Accelerator(acc: Float,  stepValue: Int, maxPower: Float, onAccChanged: (Float) -> Unit) {
+fun Accelerator(value: Float, stepValue: Int, maxPower: Float, onValueChanged: (Float) -> Unit) {
     Slider(
         modifier = Modifier
             .graphicsLayer {
@@ -148,41 +157,10 @@ fun Accelerator(acc: Float,  stepValue: Int, maxPower: Float, onAccChanged: (Flo
                 }
             }
             .width(300.dp) // Set the desired *vertical* height here
-        .height(50.dp), value = acc, onValueChange = {
-        onAccChanged(it)
-    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 1
+            .height(50.dp), value = value, onValueChange = {
+            onValueChanged(it)
+        }, valueRange = -maxPower..maxPower, steps = (maxPower / stepValue).toInt() - 1
     )
-}
-
-@Composable
-fun Director(dir: Float, stepValue: Int, maxPower: Float, onDirChanged: (Float) -> Unit) {
-    Slider(
-        modifier = Modifier
-            .graphicsLayer {
-                rotationZ = 270f // Rotates the slider 90 degrees counter-clockwise
-                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
-            }
-            .layout { measurable, constraints ->
-                // Swap the width and height constraints
-                val placeable = measurable.measure(
-                    Constraints(
-                        minWidth = constraints.minHeight,
-                        maxWidth = constraints.maxHeight,
-                        minHeight = constraints.minWidth,
-                        maxHeight = constraints.maxHeight,
-                    )
-                )
-                // Place the UI element with adjusted position after rotation
-                layout(placeable.height, placeable.width) {
-                    placeable.place(-placeable.width, 0)
-                }
-            }
-            .width(300.dp) // Set the desired *vertical* height here
-        .height(50.dp), value = dir, onValueChange = {
-        onDirChanged(it)
-    }, valueRange = -maxPower..maxPower, steps = (maxPower/stepValue).toInt() - 1
-    )
-
 }
 
 @Composable
@@ -204,52 +182,5 @@ fun Tray(
         ) {
             content()
         }
-    }
-}
-
-
-@Composable
-fun Board8() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "α", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "α", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "β", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "β", style = MaterialTheme.typography.displaySmall
-        )
-    }
-}
-
-@Composable
-fun Board9() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "Ɣ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Ɣ", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "Δ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Δ", style = MaterialTheme.typography.displaySmall
-        )
     }
 }

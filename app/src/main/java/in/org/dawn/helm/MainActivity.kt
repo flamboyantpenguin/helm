@@ -53,7 +53,7 @@ import `in`.org.dawn.helm.ui.about.About
 import `in`.org.dawn.helm.ui.settings.Config
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import `in`.org.dawn.helm.ui.theme.AppTheme
-import `in`.org.dawn.helm.wheels.gyro.Earth
+import `in`.org.dawn.helm.wheels.askew.Earth
 import `in`.org.dawn.helm.wheels.remote.TVRemote
 import `in`.org.dawn.helm.wheels.thrust.BooleanThrust
 

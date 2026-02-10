@@ -1,4 +1,4 @@
-package `in`.org.dawn.helm.wheels.gyro
+package `in`.org.dawn.helm.wheels.askew
 
 import android.content.Context
 import android.hardware.Sensor
@@ -8,18 +8,23 @@ import android.hardware.SensorManager
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -28,79 +33,77 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import `in`.org.dawn.helm.ui.theme.emojiFont
-
 
 @Composable
-fun DirectionGauge(acc: Int, dir: Int, boxSize: Dp) {
+fun DirectionGauge(acc: Float, dir: Float, boxSize: Dp) {
 
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val disabledColor = MaterialTheme.colorScheme.surfaceVariant
 
-    val targetAngle = when (dir) {
-        -1 -> -45f
-        1 -> 45f
-        else -> 0f
+    var targetAngle = (dir / 100) * 90f
+
+    if (acc < 0) targetAngle = when (targetAngle) {
+        in 0f..100f -> targetAngle + 180f
+        else -> targetAngle - 180f
     }
 
     val animatedAngle by animateFloatAsState(
-        targetValue = targetAngle,
-        animationSpec = spring(stiffness = Spring.StiffnessLow)
+        targetValue = targetAngle, animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 
     Box(
         modifier = Modifier
             .size(boxSize)
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val center = Offset(size.width / 2, size.height)
+            val center = Offset(size.width / 2, size.height / 2)
 
             drawArc(
                 color = disabledColor,
-                startAngle = 180f,
-                sweepAngle = 180f,
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // Speed Arc
+            drawArc(
+                color = tertiaryColor,
+                startAngle = -90f,
+                sweepAngle = (acc / 100f) * 360f,
                 useCenter = false,
                 style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
             )
 
             rotate(degrees = animatedAngle, pivot = center) {
                 drawLine(
-                    color = if (acc != 0) secondaryColor else disabledColor,
+                    color = if (acc != 0f) secondaryColor else disabledColor,
                     start = center,
                     end = Offset(size.width / 2, 20f),
-                    strokeWidth = 12.dp.toPx(),
+                    strokeWidth = 4.dp.toPx(),
                     cap = StrokeCap.Round
                 )
             }
         }
-
-        Text(
-            text = getSignal(acc, dir),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-        )
     }
 }
 
 
-
 @Composable
-fun TiltSensorHandler(onDirectionChanged: (Int) -> Unit) {
+fun TiltSensorHandler(onDirectionChanged: (Float) -> Unit) {
     val context = LocalContext.current
+    val deadZone = 1.0f
+    val maxTilt = 6.0f
 
     DisposableEffect(Unit) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -115,12 +118,21 @@ fun TiltSensorHandler(onDirectionChanged: (Int) -> Unit) {
                 val yAxis = event.values[1]
 
                 val dir = when {
-                    yAxis > 2.0f  -> 1   // Constant Right
-                    yAxis < -2.0f -> -1  // Constant Left
-                    else          -> 0   // Neutral
+                    yAxis > deadZone -> {
+                        // Map (deadZone..maxTilt) to (0..100)
+                        ((yAxis - deadZone) / (maxTilt - deadZone) * 100f).coerceIn(0f, 100f)
+                    }
+
+                    yAxis < -deadZone -> {
+                        // Map (-maxTilt..-deadZone) to (-100..0)
+                        ((yAxis + deadZone) / (maxTilt - deadZone) * 100f).coerceIn(-100f, 0f)
+                    }
+
+                    else -> 0f
                 }
                 onDirectionChanged(dir)
             }
+
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
 
@@ -133,7 +145,7 @@ fun TiltSensorHandler(onDirectionChanged: (Int) -> Unit) {
 }
 
 @Composable
-fun Accelerator(size: Dp, text: String, onPressStateChanged: (Boolean) -> Unit) {
+fun Accelerator(size: Dp, icon: Int, onPressStateChanged: (Boolean) -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -144,8 +156,9 @@ fun Accelerator(size: Dp, text: String, onPressStateChanged: (Boolean) -> Unit) 
     Box(
         modifier = Modifier
             .background(
-                MaterialTheme.colorScheme.tertiary, shape = RectangleShape
+                MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(10.dp)
             )
+            .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current,
@@ -153,13 +166,32 @@ fun Accelerator(size: Dp, text: String, onPressStateChanged: (Boolean) -> Unit) 
             .padding(16.dp)
             .size(size, size), contentAlignment = Alignment.Center
     ) {
-        Text(text = text, color = MaterialTheme.colorScheme.onTertiary, style = TextStyle(
-            fontFamily = emojiFont,
-            fontSize = 24.sp,
-            platformStyle = PlatformTextStyle(
-                includeFontPadding = false
-            )
+        Icon(
+            imageVector = ImageVector.vectorResource(icon),
+            tint = MaterialTheme.colorScheme.primary,
+            contentDescription = null,
+            modifier = Modifier.size(size)
         )
+    }
+}
+
+@Composable
+fun Break(size: Dp, icon: Int, onPressed: () -> Unit) {
+    OutlinedButton(
+        modifier = Modifier
+            .padding(8.dp)
+            .size(size),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.tertiary),
+        contentPadding = PaddingValues(0.dp),
+        onClick = {
+            onPressed()
+        }) {
+        Icon(
+            imageVector = ImageVector.vectorResource(icon),
+            tint = MaterialTheme.colorScheme.tertiary,
+            contentDescription = null,
+            modifier = Modifier.size(size * 0.6f)
         )
     }
 }

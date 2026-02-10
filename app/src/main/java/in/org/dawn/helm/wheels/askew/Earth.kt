@@ -1,9 +1,8 @@
-package `in`.org.dawn.helm.wheels.gyro
+package `in`.org.dawn.helm.wheels.askew
 
 import android.app.Activity
 import android.content.res.Configuration
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,15 +11,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,21 +29,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import `in`.org.dawn.helm.R
+import `in`.org.dawn.helm.boards.Board7
+import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
-
-fun getSignal(a: Int, d: Int): String = when (a to d) {
-    1 to 1 -> "TR"
-    1 to -1 -> "TL"
-    -1 to 1 -> "BR"
-    -1 to -1 -> "BL"
-    0 to 1 -> "R0"
-    0 to -1 -> "L0"
-    1 to 0 -> "T0"
-    -1 to 0 -> "B0"
-    else -> ""
-}
 
 @Composable
 @Preview
@@ -65,8 +53,11 @@ fun Earth() {
         }
     }
 
-    var acc by remember { mutableIntStateOf(0) }
-    var dir by remember { mutableIntStateOf(0) }
+    var acc by remember { mutableFloatStateOf(0f) }
+    var dir by remember { mutableFloatStateOf(0f) }
+
+    var decay by remember { mutableStateOf(false) }
+    var increment by remember { mutableStateOf(false) }
 
     val viewModel: SettingsViewModel = hiltViewModel()
     val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,9 +67,25 @@ fun Earth() {
         Lantern.connect(lanternState.host, lanternState.secure)
     }
 
+    LaunchedEffect(increment, decay) {
+        while (acc != 0f || increment || decay) {
+            if (increment) {
+                if (acc != 100f) acc += 1f
+            }
+            else if (decay) {
+                if (acc != -100f) acc -= 1f
+            }
+            else {
+                if (acc >= 0) acc -= 1f
+                else acc += 1f
+            }
+            delay(50)
+        }
+    }
+
     LaunchedEffect(acc, dir) {
-        while (acc != 0 || dir != 0) {
-            Lantern.sendCommand(getSignal(acc, dir), token = lanternState.token)
+        while (acc != 0f || dir != 0f) {
+            Lantern.sendActuation(acc, dir, token = lanternState.token)
             delay(lanternState.delay)
         }
     }
@@ -103,20 +110,46 @@ fun Earth() {
                     DirectionGauge(acc, dir, 150.dp)
                 }
                 Spacer(Modifier.weight(1f))
-                Tray(false) {
-                    Board8()
-                    Board9()
-                }
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Accelerator(50.dp, text = "🙃") { isPressed ->
-                        if (isPressed) acc = -1 else if (acc == -1) acc = 0
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Break(50.dp, R.drawable.stop_24dp) { acc = 0f }
+                        Accelerator(50.dp, R.drawable.double_arrow_down_24dp) { isPressed ->
+                            decay = isPressed
+                        }
                     }
-                    Accelerator(50.dp, text = "🙂") { isPressed ->
-                        if (isPressed) acc = 1 else if (acc == 1) acc = 0
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Tray(false) {
+                            Board7(Lantern)
+                        }
+                        Tray(false) {
+                            Board8(Lantern)
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Break(50.dp, R.drawable.stop_24dp ) { acc = 0f }
+                        Accelerator(50.dp, R.drawable.double_arrow_up_24dp) { isPressed ->
+                            increment = isPressed
+                        }
                     }
                 }
             } else {
@@ -125,15 +158,11 @@ fun Earth() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Accelerator(50.dp, text = "🙃") { isPressed ->
-                        if (isPressed) acc = -1 else if (acc == -1) acc = 0
+                    Accelerator(50.dp, R.drawable.double_arrow_down_24dp) { isPressed ->
+                        if (acc >= -100f) if (isPressed) acc += -1f else acc -= -1f
                     }
-                    Tray(true) {
-                        Board8()
-                        Board9()
-                    }
-                    Accelerator(50.dp, text = "🙂") { isPressed ->
-                        if (isPressed) acc = 1 else if (acc == 1) acc = 0
+                    Accelerator(50.dp, R.drawable.double_arrow_up_24dp) { isPressed ->
+                        if (acc <= 100f) if (isPressed) acc += 1f else acc -= 1f
                     }
                 }
             }
@@ -144,7 +173,7 @@ fun Earth() {
 
 @Composable
 fun Tray(
-    isLandscape: Boolean, content: @Composable () -> Unit
+    isLandscape: Boolean = false, content: @Composable () -> Unit
 ) {
     if (isLandscape) {
         Column(
@@ -155,58 +184,11 @@ fun Tray(
     } else {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .padding(10.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
             content()
         }
-    }
-}
-
-
-@Composable
-fun Board8() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "α", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "α", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "β", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "β", style = MaterialTheme.typography.displaySmall
-        )
-    }
-}
-
-@Composable
-fun Board9() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "Ɣ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Ɣ", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "Δ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Δ", style = MaterialTheme.typography.displaySmall
-        )
     }
 }

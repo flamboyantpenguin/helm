@@ -7,6 +7,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 object Lantern {
+    var ready: Boolean = false
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
 
@@ -15,12 +16,18 @@ object Lantern {
         val request = Request.Builder().url(url).build()
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                println("Connected to ESP!")
+                //println("Connected to ESP!")
+                ready = true
             }
         })
     }
 
-    fun sendCommand(instruction: String, token: String) {
-        webSocket?.send("$token~{$instruction}")
+    fun sendActuation(x: Float, y: Float, token: String) {
+        webSocket?.send("$token~{$x:$y}")
     }
+
+    fun sendCtrl(instruction: String, token: String) {
+        webSocket?.send("$token~[$instruction]")
+    }
+
 }

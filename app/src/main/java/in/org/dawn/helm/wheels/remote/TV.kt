@@ -3,7 +3,6 @@ package `in`.org.dawn.helm.wheels.remote
 import android.app.Activity
 import android.content.res.Configuration
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -21,10 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -52,7 +49,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import `in`.org.dawn.helm.boards.Board7
+import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
+import `in`.org.dawn.helm.prefs.LanternState
+import `in`.org.dawn.helm.prefs.RemoteState
 import `in`.org.dawn.helm.shapes.DrawShape
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -63,7 +64,9 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-fun offsetMapper(x: Float, y: Float, maxSize: Float, maxPower: Int, isDifferential: Boolean): Pair<Float, Float> {
+fun offsetMapper(
+    x: Float, y: Float, maxSize: Float, maxPower: Int, isDifferential: Boolean
+): Pair<Float, Float> {
     val nX = (x / maxSize) * maxPower
     val nY = -(y / maxSize) * maxPower
     if (isDifferential) {
@@ -71,8 +74,7 @@ fun offsetMapper(x: Float, y: Float, maxSize: Float, maxPower: Int, isDifferenti
         val right = nY - nX
         val max = maxOf(abs(left), abs(right), 100f)
         return Pair(
-            (left / max) * maxPower,
-            (right / max) * maxPower
+            (left / max) * maxPower, (right / max) * maxPower
         )
     }
     return Pair(nX, nY)
@@ -85,6 +87,15 @@ fun TVRemote() {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val viewModel: SettingsViewModel = hiltViewModel()
+    val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val lanternState = settingsState.lantern
+
+    LaunchedEffect(lanternState.host) {
+        Lantern.connect(lanternState.host, lanternState.secure)
+    }
 
     DisposableEffect(Unit) {
         val window = (context as Activity).window
@@ -106,10 +117,10 @@ fun TVRemote() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Tray(true, { Board8() })
-                Tray(true, { Board9() })
+                Tray(true, { Board7(Lantern) })
+                Tray(true, { Board8(Lantern) })
                 Spacer(Modifier.padding(70.dp))
-                Controller(true, 60.dp)
+                Controller(lanternState, settingsState.remote, true, 60.dp)
             }
         } else {
             Column(
@@ -118,9 +129,9 @@ fun TVRemote() {
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Tray(false, { Board8() })
-                Controller(false, 80.dp)
-                Tray(false, { Board9() })
+                Tray(false, { Board7(Lantern) })
+                Controller(lanternState, settingsState.remote, false, 80.dp)
+                Tray(false, { Board8(Lantern) })
             }
         }
 
@@ -150,7 +161,9 @@ fun Tray(
 }
 
 @Composable
-fun Controller(isLandscape: Boolean, buttonSize: Dp) {
+fun Controller(
+    lanternState: LanternState, remoteState: RemoteState, isLandscape: Boolean, buttonSize: Dp
+) {
     // Support RTL
     val layoutDirection = LocalLayoutDirection.current
     val directionFactor = if (layoutDirection == LayoutDirection.Rtl) -1 else 1
@@ -169,15 +182,6 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
 
     var currentPosition by remember { mutableStateOf<Position?>(null) }
 
-    val viewModel: SettingsViewModel = hiltViewModel()
-    val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
-    val state = settingsState.remote
-    val lanternState = settingsState.lantern
-
-    LaunchedEffect(lanternState.host) {
-        Lantern.connect(lanternState.host, lanternState.secure)
-    }
-
     LaunchedEffect(offsetX.value, offsetY.value) {
 
         val newPosition = getPosition(
@@ -188,10 +192,12 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
 
         currentPosition = newPosition
 
-        val (cX, cY) = offsetMapper(offsetX.value, offsetY.value, dragSizePx, lanternState.power, state.isTank)
+        val (cX, cY) = offsetMapper(
+            offsetX.value, offsetY.value, dragSizePx, lanternState.power, remoteState.isTank
+        )
         while (abs(cX) > 0.1f || abs(cY) > 0.1f) {
-            Lantern.sendCommand(
-                "$cX:$cY", token = lanternState.token
+            Lantern.sendActuation(
+                cX, cY, token = lanternState.token
             )
             delay(lanternState.delay)
         }
@@ -301,52 +307,6 @@ fun Controller(isLandscape: Boolean, buttonSize: Dp) {
         }
     }
 
-}
-
-@Composable
-fun Board8() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "α", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "α", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "β", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "β", style = MaterialTheme.typography.displaySmall
-        )
-    }
-}
-
-@Composable
-fun Board9() {
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            Toast.makeText(context, "Ɣ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Ɣ", style = MaterialTheme.typography.displaySmall
-        )
-    }
-    Button(
-        onClick = {
-            Toast.makeText(context, "Δ", Toast.LENGTH_SHORT).show()
-        },
-    ) {
-        Text(
-            "Δ", style = MaterialTheme.typography.displaySmall
-        )
-    }
 }
 
 @Composable

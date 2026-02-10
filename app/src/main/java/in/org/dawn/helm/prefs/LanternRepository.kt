@@ -17,6 +17,8 @@ data class LanternState(
     val secure: Boolean = false,
     val delay: Long = 500,
     val power: Int = 100,
+    val ctrl7: String = "α,β,γ,δ",
+    val ctrl8: String = "W,X,Y,Z"
 )
 
 private val Context.lanternDataStore by preferencesDataStore(name = "lantern_settings")
@@ -29,6 +31,8 @@ class LanternRepository(private val context: Context) {
         private val SECURE = booleanPreferencesKey("lantern_secure")
         private val DELAY = longPreferencesKey("lantern_delay")
         private val POWER = intPreferencesKey("lantern_power")
+        private val CTRL7 = stringPreferencesKey("lantern_ctrl7")
+        private val CTRL8 = stringPreferencesKey("lantern_ctrl8")
     }
 
     val settingsFlow: Flow<LanternState> = context.lanternDataStore.data.map { prefs ->
@@ -38,6 +42,9 @@ class LanternRepository(private val context: Context) {
             secure = prefs[SECURE] ?: true,
             delay = prefs[DELAY] ?: 500,
             power = prefs[POWER] ?: 100,
+            ctrl7 = prefs[CTRL7] ?: "α,β,γ,δ",
+            ctrl8 = prefs[CTRL8] ?: "W,X,Y,Z"
+
         )
     }
 
@@ -49,6 +56,8 @@ class LanternRepository(private val context: Context) {
                 "lantern_secure" -> prefs[SECURE] = value as Boolean
                 "lantern_delay" -> prefs[DELAY] = value as Long
                 "lantern_power" -> prefs[POWER] = value as Int
+                "lantern_ctrl7" -> prefs[CTRL7] = value as String
+                "lantern_ctrl8" -> prefs[CTRL8] = value as String
             }
         }
     }
