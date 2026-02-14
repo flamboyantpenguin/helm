@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import `in`.org.dawn.helm.prefs.EarthRepository
 import `in`.org.dawn.helm.prefs.LanternRepository
 import `in`.org.dawn.helm.prefs.MainRepository
 import `in`.org.dawn.helm.prefs.RemoteRepository
@@ -26,6 +27,12 @@ object DataModule {
     @Singleton
     fun provideLanternRepo(@ApplicationContext context: Context): LanternRepository {
         return LanternRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideEarthRepo(@ApplicationContext context: Context): EarthRepository {
+        return EarthRepository(context)
     }
 
     @Provides

@@ -46,6 +46,7 @@ import androidx.core.text.isDigitsOnly
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.R
+import `in`.org.dawn.helm.prefs.EarthState
 import `in`.org.dawn.helm.prefs.LanternState
 import `in`.org.dawn.helm.prefs.MainState
 import `in`.org.dawn.helm.prefs.RemoteState
@@ -71,16 +72,16 @@ fun Config() {
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.primary,
-            ), title = {
-                Text(
-                    stringResource(R.string.title_settings),
-                    Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.displayMedium
-                )
-            }, scrollBehavior = scrollBehavior
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ), title = {
+                    Text(
+                        stringResource(R.string.title_settings),
+                        Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.displayMedium
+                    )
+                }, scrollBehavior = scrollBehavior
             )
         }) { innerPadding ->
 
@@ -101,6 +102,11 @@ fun Config() {
                 R.string.gamepad_name_remote, R.drawable.tv_remote_24dp, {
                     Remote(
                         state = state.remote,
+                        onSettingsChanged = { key, value -> viewModel.updateSetting(key, value) })
+                }), SettingsGroup(
+                R.string.gamepad_name_askew, R.drawable.video_stable_24dp, {
+                    Earth(
+                        state = state.earth,
                         onSettingsChanged = { key, value -> viewModel.updateSetting(key, value) })
                 }), SettingsGroup(
                 R.string.gamepad_name_thrust, R.drawable.rocket_launch_24dp, {
@@ -297,6 +303,57 @@ fun Remote(state: RemoteState, onSettingsChanged: (String, Any) -> Unit) {
 }
 
 @Composable
+fun Earth(state: EarthState, onSettingsChanged: (String, Any) -> Unit) {
+    var isPrecise by remember(state.isTank) { mutableStateOf(state.isTank) }
+    var invertControls by remember(state.invertControls) { mutableStateOf(state.invertControls) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Skid Steering")
+        Spacer(Modifier.weight(1f))
+        Switch(
+            checked = isPrecise, onCheckedChange = {
+            isPrecise = it
+            onSettingsChanged("earth_is_tank", it)
+        }, thumbContent = if (isPrecise) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        })
+    }
+    Row(
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Invert Controls?")
+        Spacer(Modifier.weight(1f))
+        Switch(
+            checked = invertControls, onCheckedChange = {
+            invertControls = it
+            onSettingsChanged("earth_invert_controls", it)
+        }, thumbContent = if (invertControls) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        })
+    }
+}
+
+@Composable
 fun Thrust(state: ThrustState, onSettingsChanged: (String, Any) -> Unit) {
 
     var invertDirection by remember(state.invertLR) { mutableStateOf(state.invertLR) }
@@ -333,22 +390,22 @@ fun Thrust(state: ThrustState, onSettingsChanged: (String, Any) -> Unit) {
         Spacer(Modifier.weight(1f))
         Switch(
             checked = invertDirection, onCheckedChange = {
-                invertDirection = it
-                onSettingsChanged("thrust_invert_lr", it)
-            }, thumbContent = if (invertDirection) {
-                {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
-            })
+            invertDirection = it
+            onSettingsChanged("thrust_invert_lr", it)
+        }, thumbContent = if (invertDirection) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.helm_24dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        })
     }
-    
+
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         value = stepValue,

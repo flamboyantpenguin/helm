@@ -16,10 +16,30 @@ object Lantern {
         val request = Request.Builder().url(url).build()
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                //println("Connected to ESP!")
                 ready = true
             }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                ready = false
+            }
+
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                ready = false
+                webSocket.close(1000, null)
+            }
+
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                ready = false
+            }
         })
+    }
+
+    fun disconnect() {
+        ready = false
+
+        webSocket?.close(1000, "Lights off")
+
+        webSocket = null
     }
 
     fun sendActuation(x: Float, y: Float, token: String) {

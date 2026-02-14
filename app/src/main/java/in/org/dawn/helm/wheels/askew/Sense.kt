@@ -8,7 +8,6 @@ import android.hardware.SensorManager
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -17,19 +16,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -45,8 +44,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DirectionGauge(acc: Float, dir: Float, boxSize: Dp) {
 
-    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
     val disabledColor = MaterialTheme.colorScheme.surfaceVariant
 
     var targetAngle = (dir / 100) * 90f
@@ -78,7 +78,7 @@ fun DirectionGauge(acc: Float, dir: Float, boxSize: Dp) {
 
             // Speed Arc
             drawArc(
-                color = tertiaryColor,
+                color = if (acc > 0) primaryColor else tertiaryColor,
                 startAngle = -90f,
                 sweepAngle = (acc / 100f) * 360f,
                 useCenter = false,
@@ -176,22 +176,58 @@ fun Accelerator(size: Dp, icon: Int, onPressStateChanged: (Boolean) -> Unit) {
 }
 
 @Composable
-fun Break(size: Dp, icon: Int, onPressed: () -> Unit) {
-    OutlinedButton(
+fun ClickButton(size: Dp, icon: Int, onPressed: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
         modifier = Modifier
-            .padding(8.dp)
+            .background(
+                MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(10.dp)
+            )
+            .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = { onPressed() })
+            .padding(16.dp)
             .size(size),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.tertiary),
-        contentPadding = PaddingValues(0.dp),
-        onClick = {
-            onPressed()
-        }) {
+        contentAlignment = Alignment.Center
+    ) {
         Icon(
             imageVector = ImageVector.vectorResource(icon),
-            tint = MaterialTheme.colorScheme.tertiary,
+            tint = MaterialTheme.colorScheme.primary,
             contentDescription = null,
-            modifier = Modifier.size(size * 0.6f)
+            modifier = Modifier.size(size)
+        )
+    }
+}
+
+@Composable
+fun SwitchButton(size: Dp, icon: Int, onButtonStateChanged: (Boolean) -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    var buttonState by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .background(
+                if (buttonState) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .border(2.dp, MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = {
+                    buttonState = !buttonState
+                    onButtonStateChanged(buttonState)
+                })
+            .padding(16.dp)
+            .size(size), contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(icon),
+            tint = if (buttonState) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary,
+            contentDescription = null,
+            modifier = Modifier.size(size)
         )
     }
 }
