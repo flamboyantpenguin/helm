@@ -2,6 +2,7 @@
 <resources>
 
     <style name="Theme.Helm" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/helm_splash</item>
         <item name="android:windowSplashScreenBackground">@color/navy_blue</item>
         <item name="android:windowSplashScreenBrandingImage">@drawable/dawn</item>
     </style>
