@@ -15,7 +15,7 @@ data class LanternState(
     val host: String = "10.0.0.1",
     val token: String = "",
     val secure: Boolean = false,
-    val delay: Long = 500,
+    val delay: Long = 16,
     val power: Int = 100,
     val ctrl7: String = "α,β,γ,δ",
     val ctrl8: String = "W,X,Y,Z"

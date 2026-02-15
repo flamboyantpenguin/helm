@@ -305,6 +305,7 @@ fun Remote(state: RemoteState, onSettingsChanged: (String, Any) -> Unit) {
 @Composable
 fun Earth(state: EarthState, onSettingsChanged: (String, Any) -> Unit) {
     var isPrecise by remember(state.isTank) { mutableStateOf(state.isTank) }
+    var stepValue by remember(state.delay) { mutableStateOf(state.delay.toString()) }
     var invertControls by remember(state.invertControls) { mutableStateOf(state.invertControls) }
 
     Row(
@@ -351,6 +352,21 @@ fun Earth(state: EarthState, onSettingsChanged: (String, Any) -> Unit) {
             null
         })
     }
+
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = stepValue,
+        label = { Text(text = "Step Value") },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number
+        ),
+        singleLine = true,
+        onValueChange = {
+            stepValue = it
+            if (stepValue.isNotEmpty() && stepValue.isDigitsOnly()) {
+                onSettingsChanged("earth_step_power", stepValue.toLong())
+            }
+        })
 }
 
 @Composable
@@ -420,4 +436,5 @@ fun Thrust(state: ThrustState, onSettingsChanged: (String, Any) -> Unit) {
                 onSettingsChanged("thrust_step_value", stepValue.toInt())
             }
         })
+
 }

@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.boards.Board7
 import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
+import `in`.org.dawn.helm.comms.igniteLantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
 
@@ -46,37 +47,39 @@ fun BooleanThrust() {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    DisposableEffect(Unit) {
-        val window = (context as Activity).window
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
-        onDispose {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-    }
-
-    var acc by remember { mutableFloatStateOf(0f) }
-    var dir by remember { mutableFloatStateOf(0f) }
-
     val viewModel: SettingsViewModel = hiltViewModel()
     val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val thrustState = settingsState.thrust
     val lanternState = settingsState.lantern
 
-    LaunchedEffect(lanternState.host) {
-        Lantern.connect(lanternState.host, lanternState.secure)
-    }
+    DisposableEffect(Unit, lanternState) {
+        val window = (context as Activity).window
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-    LaunchedEffect(acc, dir) {
-        while (acc.toInt() != 0 || dir.toInt() != 0) {
-            var x = acc; var y = dir
-            if (thrustState.invertControls) x = y.also { y = x }
-            if (thrustState.invertLR) y = -y
-            Lantern.sendActuation(x, y, token = lanternState.token)
-            delay(500)
+        igniteLantern(lanternState.host, lanternState.secure)
+
+        onDispose {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            Lantern.disconnect()
         }
     }
+
+    var acc by remember { mutableFloatStateOf(0f) }
+    var dir by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(acc, dir) {
+        if (Lantern.ready) {
+            val (finalX, finalY) = when {
+                thrustState.invertControls -> dir to acc
+                thrustState.invertLR -> acc to -dir
+                else -> acc to dir
+            }
+            Lantern.sendActuation(finalX, finalY, lanternState.token)
+        }
+    }
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -92,7 +95,9 @@ fun BooleanThrust() {
                 Row(
                     Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Accelerator(dir, thrustState.stepValue, lanternState.power.toFloat()) { dir = it }
+                    Accelerator(dir, thrustState.stepValue, lanternState.power.toFloat()) {
+                        dir = it
+                    }
                     Tray(true) {
                         Board7(Lantern)
                     }
@@ -157,9 +162,9 @@ fun Accelerator(value: Float, stepValue: Int, maxPower: Float, onValueChanged: (
                 }
             }
             .width(300.dp) // Set the desired *vertical* height here
-            .height(50.dp), value = value, onValueChange = {
-            onValueChanged(it)
-        }, valueRange = -maxPower..maxPower, steps = (maxPower / stepValue).toInt() - 1
+        .height(50.dp), value = value, onValueChange = {
+        onValueChanged(it)
+    }, valueRange = -maxPower..maxPower, steps = (maxPower / stepValue).toInt() - 1
     )
 }
 

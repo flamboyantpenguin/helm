@@ -52,11 +52,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import `in`.org.dawn.helm.boards.Board7
 import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
+import `in`.org.dawn.helm.comms.igniteLantern
 import `in`.org.dawn.helm.prefs.LanternState
 import `in`.org.dawn.helm.prefs.RemoteState
 import `in`.org.dawn.helm.shapes.DrawShape
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.pow
@@ -93,16 +95,15 @@ fun TVRemote() {
 
     val lanternState = settingsState.lantern
 
-    LaunchedEffect(lanternState.host) {
-        Lantern.connect(lanternState.host, lanternState.secure)
-    }
-
-    DisposableEffect(Unit) {
+    DisposableEffect(Unit, lanternState) {
         val window = (context as Activity).window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        if (isLandscape) igniteLantern(lanternState.host, lanternState.secure)
+
         onDispose {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            Lantern.disconnect()
         }
     }
 
@@ -182,6 +183,26 @@ fun Controller(
 
     var currentPosition by remember { mutableStateOf<Position?>(null) }
 
+    LaunchedEffect(
+        lanternState
+    ) {
+        var x = 0f
+        var y = 0f
+        while (isActive) {
+            val (cX, cY) = offsetMapper(
+                offsetX.value, offsetY.value, dragSizePx, lanternState.power, remoteState.isTank
+            )
+            if (Lantern.ready && (cX != x || cY != y) && (abs(cX) > 0.1f || abs(cY) > 0.1f)) {
+                Lantern.sendActuation(cX, cY, lanternState.token)
+                delay(lanternState.delay)
+                x = cX
+                y = cY
+            } else {
+                delay(lanternState.delay)
+            }
+        }
+    }
+
     LaunchedEffect(offsetX.value, offsetY.value) {
 
         val newPosition = getPosition(
@@ -191,16 +212,6 @@ fun Controller(
         )
 
         currentPosition = newPosition
-
-        val (cX, cY) = offsetMapper(
-            offsetX.value, offsetY.value, dragSizePx, lanternState.power, remoteState.isTank
-        )
-        while (abs(cX) > 0.1f || abs(cY) > 0.1f) {
-            Lantern.sendActuation(
-                cX, cY, token = lanternState.token
-            )
-            delay(lanternState.delay)
-        }
     }
 
     Column(

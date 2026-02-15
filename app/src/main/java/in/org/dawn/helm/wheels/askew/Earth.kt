@@ -47,8 +47,10 @@ import `in`.org.dawn.helm.R
 import `in`.org.dawn.helm.boards.Board7
 import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
+import `in`.org.dawn.helm.comms.igniteLantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.abs
 
 @Composable
@@ -57,12 +59,21 @@ fun Earth() {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    DisposableEffect(Unit) {
+    val viewModel: SettingsViewModel = hiltViewModel()
+    val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val earthState = settingsState.earth
+    val lanternState = settingsState.lantern
+
+    DisposableEffect(Unit, lanternState) {
         val window = (context as Activity).window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        if (isLandscape) igniteLantern(lanternState.host, lanternState.secure)
+
         onDispose {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            Lantern.disconnect()
         }
     }
 
@@ -73,13 +84,29 @@ fun Earth() {
     var increment by remember { mutableStateOf(false) }
     var decrement by remember { mutableStateOf(false) }
 
-    val viewModel: SettingsViewModel = hiltViewModel()
-    val settingsState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(
+        lanternState, isLandscape
+    ) {
 
-    val earthState = settingsState.earth
-    val lanternState = settingsState.lantern
-
-    igniteLantern(lanternState.host, lanternState.secure)
+        var x = 0f
+        var y = 0f
+        while (isActive) {
+            if (Lantern.ready && (acc != x || dir != y)) {
+                if (earthState.isTank) {
+                    toDifferential(
+                        acc, dir, lanternState.power
+                    ).let { (x, y) -> Lantern.sendActuation(x, y, lanternState.token) }
+                } else {
+                    Lantern.sendActuation(acc, dir, lanternState.token)
+                }
+                delay(lanternState.delay)
+                x = acc
+                y = dir
+            } else {
+                delay(lanternState.delay)
+            }
+        }
+    }
 
     LaunchedEffect(increment, decrement, decay) {
         while (!decay && (acc != 0f || increment || decrement)) {
@@ -91,20 +118,7 @@ fun Earth() {
                 if (acc >= 0) acc -= 1f
                 else acc += 1f
             }
-            delay(10)
-        }
-    }
-
-    LaunchedEffect(acc, dir) {
-        while (acc != 0f || dir != 0f) {
-            if (earthState.isTank) {
-                toDifferential(
-                    acc, dir, lanternState.power
-                ).let { (x, y) -> Lantern.sendActuation(x, y, token = lanternState.token) }
-            } else {
-                Lantern.sendActuation(acc, dir, token = lanternState.token)
-            }
-            delay(lanternState.delay)
+            delay(earthState.delay)
         }
     }
 
@@ -202,10 +216,6 @@ fun toDifferential(x: Float, y: Float, maxPower: Int): Pair<Float, Float> {
     return Pair(
         (left / max) * maxPower, (right / max) * maxPower
     )
-}
-
-fun igniteLantern(host: String, secure: Boolean) {
-    Lantern.connect(host, secure)
 }
 
 @Composable
