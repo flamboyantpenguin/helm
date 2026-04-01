@@ -55,7 +55,7 @@ import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.comms.igniteLantern
 import `in`.org.dawn.helm.prefs.LanternState
 import `in`.org.dawn.helm.prefs.RemoteState
-import `in`.org.dawn.helm.shapes.DrawShape
+import `in`.org.dawn.helm.ui.shapes.DrawShape
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive

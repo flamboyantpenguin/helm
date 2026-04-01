@@ -37,7 +37,6 @@ import `in`.org.dawn.helm.boards.Board8
 import `in`.org.dawn.helm.comms.Lantern
 import `in`.org.dawn.helm.comms.igniteLantern
 import `in`.org.dawn.helm.ui.settings.SettingsViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 @Preview

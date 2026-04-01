@@ -5,7 +5,7 @@
  * Original Source: https://github.com/MohamedRejeb/Compose-Interactive-Gamepad
  */
 
-package `in`.org.dawn.helm.shapes
+package `in`.org.dawn.helm.ui.shapes
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
